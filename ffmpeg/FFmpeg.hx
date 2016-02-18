@@ -4,7 +4,8 @@ package ffmpeg;
     #error "ffmpeg is only available with haxe + hxcpp ( cpp target )."
 #end
 
-typedef Context = cpp.Pointer<AVFormatContext>;
+typedef FormatContext = cpp.Pointer<AVFormatContext>;
+typedef CodecContext = cpp.Pointer<AVCodecContext>;
 
 @:keep
 @:include('linc_ffmpeg.h')
@@ -16,9 +17,14 @@ typedef Context = cpp.Pointer<AVFormatContext>;
 extern class FFmpeg
 {
 	@:native('avformat_alloc_context')
-	public static function avformat_alloc_context() : Context;
+	public static function avformat_alloc_context() : cpp.Pointer<AVFormatContext>;
 }
 
-:native("AVFormatContext")
+@:native("AVFormatContext")
 @:include('linc_ffmpeg.h')
-private extern class AVFormatContext {}
+private extern class AVFormatContext { }
+
+
+@:native("AVCodecContext")
+@:include('linc_ffmpeg.h')
+private extern class AVCodecContext {}
