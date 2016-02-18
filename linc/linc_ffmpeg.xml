@@ -1,0 +1,24 @@
+<xml>
+
+    <files id='haxe'>
+		<compilerflag value='-DLINC_FFMPEG'/>
+        <compilerflag value='-I${LINC_FFMPEG_PATH}/linc/'/>
+		<file name='${LINC_FFMPEG_PATH}linc/linc_ffmpeg.cpp' />
+    </files>
+
+    <target id="haxe">
+
+		<section if="windows">
+            <lib name='${LINC_FFMPEG_PATH}lib/ffmpeg/lib/Windows/avcodec.lib' 		if='HXCPP_M32' />
+            <lib name='${LINC_FFMPEG_PATH}lib/ffmpeg/lib/Windows/avdevice.lib' 		if='HXCPP_M32' />
+            <lib name='${LINC_FFMPEG_PATH}lib/ffmpeg/lib/Windows/avfilter.lib' 		if='HXCPP_M32' />
+            <lib name='${LINC_FFMPEG_PATH}lib/ffmpeg/lib/Windows/avutil.lib' 		if='HXCPP_M32' />
+            <lib name='${LINC_FFMPEG_PATH}lib/ffmpeg/lib/Windows/avformat.lib' 		if='HXCPP_M32' />
+            <lib name='${LINC_FFMPEG_PATH}lib/ffmpeg/lib/Windows/postproc.lib' 		if='HXCPP_M32' />
+            <lib name='${LINC_FFMPEG_PATH}lib/ffmpeg/lib/Windows/swscale.lib' 		if='HXCPP_M32' />
+			<lib name='${LINC_FFMPEG_PATH}lib/ffmpeg/lib/Windows/swresample.lib' 	if='HXCPP_M32' />
+        </section>
+
+    </target>
+
+</xml>
