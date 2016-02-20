@@ -6,6 +6,8 @@ extern "C" {
 #include "libavformat/avformat.h"
 #include "libavutil/avutil.h"
 #include "libavdevice/avdevice.h"
+#include "libswscale/swscale.h"
+#include "libswresample/swresample.h"
 }
 //??
 //#pragma comment(lib, "avcodec.lib")

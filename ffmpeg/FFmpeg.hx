@@ -4,8 +4,6 @@ package ffmpeg;
     #error "ffmpeg is only available with haxe + hxcpp ( cpp target )."
 #end
 
-
-
 @:keep
 @:include('linc_ffmpeg.h')
 #if !display
@@ -38,24 +36,38 @@ extern class AVFormatContext {
 	var flags : Int;
 }
 
-
 @:native("AVCodecContext")
 @:include('linc_ffmpeg.h')
-private extern class AVCodecContext { }
+extern class AVCodecContext { }
+
+@:native("AVCodec")
+@:include('linc_ffmpeg.h')
+extern class AVCodec { }
+
+@:native("AVFrame")
+@:include('linc_ffmpeg.h')
+extern class AVFrame { }
 
 @:native("AVInputFormat")
 @:include('linc_ffmpeg.h')
-private extern class AVInputFormat { }
+extern class AVInputFormat { }
 
 @:native("AVClass")
 @:include('linc_ffmpeg.h')
-private extern class AVClass { }
+extern class AVClass { }
 
 @:native("AVOutputFormat")
 @:include('linc_ffmpeg.h')
-private extern class AVOutputFormat { }
+extern class AVOutputFormat { }
 
+@:native("SwsContext")
+@:include('linc_ffmpeg.h')
+extern class SwsContext { }
 
+@:enum
+abstract AVPixelFormat (Int){ 
+	
+}
 
 
 
