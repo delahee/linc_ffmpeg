@@ -1,6 +1,7 @@
 -main Test.hx
 -cpp cpp/
 -cp ../
+-debug
 # pick a target
 
 #-D mac

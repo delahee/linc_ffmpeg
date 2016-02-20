@@ -1,8 +1,11 @@
 #ifndef _LINC_FFMPEG_H_
 #define _LINC_FFMPEG_H_
     
+extern "C" {
 #include "libavcodec/avcodec.h"
 #include "libavformat/avformat.h"
+}
+#pragma comment(lib, "avcodec.lib")
 /*
 #include "../lib/ffmpeg/include/libavdevice"
 #include "../lib/ffmpeg/include/libavfilter"
@@ -15,7 +18,7 @@
 #include <hxcpp.h>
 
 extern "C" {
-	AVFormatContext * avformat_alloc_context();
+	//AVFormatContext *avformat_alloc_context(void);
 }
 
 namespace linc {

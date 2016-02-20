@@ -12,14 +12,39 @@
     <target id="haxe">
 
 		<section if="windows">
-            <lib name='${LINC_FFMPEG_PATH}lib/ffmpeg/lib/Windows/avcodec.lib' 		if='HXCPP_M32' />
-            <lib name='${LINC_FFMPEG_PATH}lib/ffmpeg/lib/Windows/avdevice.lib' 		if='HXCPP_M32' />
-            <lib name='${LINC_FFMPEG_PATH}lib/ffmpeg/lib/Windows/avfilter.lib' 		if='HXCPP_M32' />
-            <lib name='${LINC_FFMPEG_PATH}lib/ffmpeg/lib/Windows/avutil.lib' 		if='HXCPP_M32' />
-            <lib name='${LINC_FFMPEG_PATH}lib/ffmpeg/lib/Windows/avformat.lib' 		if='HXCPP_M32' />
-            <lib name='${LINC_FFMPEG_PATH}lib/ffmpeg/lib/Windows/postproc.lib' 		if='HXCPP_M32' />
-            <lib name='${LINC_FFMPEG_PATH}lib/ffmpeg/lib/Windows/swscale.lib' 		if='HXCPP_M32' />
-			<lib name='${LINC_FFMPEG_PATH}lib/ffmpeg/lib/Windows/swresample.lib' 	if='HXCPP_M32' />
+			<compilerflag value='/libpath:${LINC_FFMPEG_PATH}/lib/ffmpeg/lib/Windows/'/>
+			
+			<lib name="${LINC_FFMPEG_PATH}lib/ffmpeg/lib/Windows/avcodec.lib" 		 />
+            <lib name="${LINC_FFMPEG_PATH}lib/ffmpeg/lib/Windows/avdevice.lib" 		 />
+            <lib name="${LINC_FFMPEG_PATH}lib/ffmpeg/lib/Windows/avfilter.lib" 		 />
+            <lib name="${LINC_FFMPEG_PATH}lib/ffmpeg/lib/Windows/avutil.lib"		 />
+            <lib name="${LINC_FFMPEG_PATH}lib/ffmpeg/lib/Windows/avformat.lib" 		 />
+            <lib name="${LINC_FFMPEG_PATH}lib/ffmpeg/lib/Windows/postproc.lib" 		 />
+            <lib name="${LINC_FFMPEG_PATH}lib/ffmpeg/lib/Windows/swscale.lib" 		 />
+			<lib name="${LINC_FFMPEG_PATH}lib/ffmpeg/lib/Windows/swresample.lib" 	 />
+			
+			<!--<lib name="${LINC_FFMPEG_PATH}lib/ffmpeg/lib/Windows/avcodec.dll.a" 		 />-->
+            <!--<lib name="${LINC_FFMPEG_PATH}lib/ffmpeg/lib/Windows/avdevice.dll.a" 		 />-->
+            <!--<lib name="${LINC_FFMPEG_PATH}lib/ffmpeg/lib/Windows/avfilter.dll.a" 		 />-->
+            <!--<lib name="${LINC_FFMPEG_PATH}lib/ffmpeg/lib/Windows/avutil.dll.a"		 />-->
+            <!--<lib name="${LINC_FFMPEG_PATH}lib/ffmpeg/lib/Windows/avformat.dll.a" 		 />-->
+            <!--<lib name="${LINC_FFMPEG_PATH}lib/ffmpeg/lib/Windows/postproc.dll.a" 		 />-->
+            <!--<lib name="${LINC_FFMPEG_PATH}lib/ffmpeg/lib/Windows/swscale.dll.a" 		 />-->
+			<!--<lib name="${LINC_FFMPEG_PATH}lib/ffmpeg/lib/Windows/swresample.dll.a" 	 />-->
+			
+			<!--<compilerflag value="-libpath ${LINC_FFMPEG_PATH}lib/ffmpeg/lib/Windows/" />-->
+			<!--<lib name='avformat.lib' 		 />-->
+			<!--<compilerflag value='-lavformat' />-->
+			<!--
+            <lib name='${LINC_FFMPEG_PATH}lib/ffmpeg/lib/Windows/avcodec.lib' 		 />
+            <lib name='${LINC_FFMPEG_PATH}lib/ffmpeg/lib/Windows/avdevice.lib' 		 />
+            <lib name='${LINC_FFMPEG_PATH}lib/ffmpeg/lib/Windows/avfilter.lib' 		 />
+            <lib name='${LINC_FFMPEG_PATH}lib/ffmpeg/lib/Windows/avutil.lib' 		 />
+            <lib name='${LINC_FFMPEG_PATH}lib/ffmpeg/lib/Windows/avformat.lib' 		 />
+            <lib name='${LINC_FFMPEG_PATH}lib/ffmpeg/lib/Windows/postproc.lib' 		 />
+            <lib name='${LINC_FFMPEG_PATH}lib/ffmpeg/lib/Windows/swscale.lib' 		 />
+			<lib name='${LINC_FFMPEG_PATH}lib/ffmpeg/lib/Windows/swresample.lib' 	 />
+				-->
         </section>
 
     </target>
