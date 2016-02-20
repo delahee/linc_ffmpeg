@@ -4,9 +4,7 @@ package ffmpeg;
     #error "ffmpeg is only available with haxe + hxcpp ( cpp target )."
 #end
 
-typedef FormatContext = cpp.Pointer<AVFormatContext>;
-typedef CodecContext = cpp.Pointer<AVCodecContext>;
-typedef InputFormat = cpp.Pointer<AVInputFormat>;
+
 
 @:keep
 @:include('linc_ffmpeg.h')
@@ -21,7 +19,7 @@ extern class FFmpeg
 	public static function avformat_alloc_context() : cpp.Pointer<AVFormatContext>;
 	
 	@:native('linc::aveasy::describe_AVInputFormat')
-    static function describe_AVInputFormat(iformat : InputFormat) : Dynamic;
+    static function describe_AVInputFormat(iformat : cpp.Pointer<AVInputFormat>) : Dynamic;
 }
 
 @:native("AVFormatContext")
@@ -34,9 +32,21 @@ extern class AVFormatContext {
 
 @:native("AVCodecContext")
 @:include('linc_ffmpeg.h')
-
 private extern class AVCodecContext { }
 
 @:native("AVInputFormat")
 @:include('linc_ffmpeg.h')
-private extern class AVInputFormat {}
+private extern class AVInputFormat { }
+
+@:native("AVClass")
+@:include('linc_ffmpeg.h')
+private extern class AVClass { }
+
+@:native("AVOutputFormat")
+@:include('linc_ffmpeg.h')
+private extern class AVOutputFormat { }
+
+
+
+
+

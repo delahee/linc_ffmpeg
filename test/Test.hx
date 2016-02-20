@@ -8,7 +8,7 @@ class Test {
 	
         
     static function main() {
-		var c : ffmpeg.FFmpeg.FormatContext = ffmpeg.FFmpeg.avformat_alloc_context();
+		var c : cpp.Pointer<ffmpeg.FFmpeg.AVFormatContext> = ffmpeg.FFmpeg.avformat_alloc_context();
 		trace("go");
 		trace( c );
 		//trace( Std.string(c.ref) );
