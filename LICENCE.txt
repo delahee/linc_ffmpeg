@@ -1,0 +1,3 @@
+This code is licensed under LGPL3
+The ffmpeg library and all other sub licences are to be foudn in the /licences folder.
+For commercial inclusion or sub licensing, please contact david.elahee@gmail.Com

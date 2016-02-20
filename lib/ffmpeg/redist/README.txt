@@ -1,0 +1,1 @@
+This is the library used for the win32 version

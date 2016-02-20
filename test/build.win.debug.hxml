@@ -1,0 +1,8 @@
+-main Test.hx
+-cpp cpp/
+-cp ../
+-debug
+-dce no
+-D windows
+-D HXCPP_M32
+-cmd .\cpp\Test-Debug.exe

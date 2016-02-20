@@ -2,6 +2,7 @@
 -cpp cpp/
 -cp ../
 -debug
+-dce no
 # pick a target
 
 #-D mac
@@ -15,4 +16,4 @@
 -D HXCPP_M32
 
 #-cmd ./cpp/Test
--cmd .\cpp\Test.exe
+-cmd .\cpp\Test-Debug.exe
