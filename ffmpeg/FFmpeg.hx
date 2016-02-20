@@ -25,8 +25,17 @@ extern class FFmpeg
 @:native("AVFormatContext")
 @:include('linc_ffmpeg.h')
 extern class AVFormatContext { 
-	public var iformat :  cpp.Pointer<AVInputFormat>;
-	public var ctx_flags : Int;
+	var av_class :  cpp.ConstPointer<AVClass>;
+	var iformat :  cpp.Pointer<AVInputFormat>;
+	var oformat : cpp.Pointer<AVOutputFormat>;
+	var ctx_flags : Int;
+	var nb_streams : cpp.UInt32;
+	var filename : cpp.ConstCharStar;
+	
+	var start_time : cpp.Int64;
+	var duration : cpp.Int64;
+	var bit_rate : cpp.Int64;
+	var flags : Int;
 }
 
 

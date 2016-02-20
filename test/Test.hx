@@ -32,6 +32,7 @@ class Test {
 		var desc = ffmpeg.FFmpeg.describe_AVInputFormat( cast null );
 		trace( desc );
 		
+		//var file = sys.io.
 		
     }
 
