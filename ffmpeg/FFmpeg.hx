@@ -1,6 +1,6 @@
 package ffmpeg;
 
-#if !cpp
+#if (!cpp&&!display)
     #error "ffmpeg is only available with haxe + hxcpp ( cpp target )."
 #end
 
@@ -26,11 +26,15 @@ extern class FFmpeg
 
 @:native("AVFormatContext")
 @:include('linc_ffmpeg.h')
-private extern class AVFormatContext { }
+extern class AVFormatContext { 
+	public var iformat :  cpp.Pointer<AVInputFormat>;
+	public var ctx_flags : Int;
+}
 
 
 @:native("AVCodecContext")
 @:include('linc_ffmpeg.h')
+
 private extern class AVCodecContext { }
 
 @:native("AVInputFormat")

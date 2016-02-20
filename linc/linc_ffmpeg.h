@@ -8,7 +8,7 @@ extern "C" {
 #include "libavdevice/avdevice.h"
 }
 //??
-#pragma comment(lib, "avcodec.lib")
+//#pragma comment(lib, "avcodec.lib")
 /*
 #include "../lib/ffmpeg/include/libavdevice"
 #include "../lib/ffmpeg/include/libavfilter"
@@ -21,15 +21,12 @@ extern "C" {
 #include <hxcpp.h>
 
 extern "C" {
-	//AVFormatContext *avformat_alloc_context(void);
 }
 
 namespace linc {
 
     namespace ffmpeg {
-		//extern AVFormatContext * avformat_alloc_context(void);
-		//extern AVCodecContext avformat_alloc_context(void);
-    } //empty namespace
+    } 
 
 	namespace aveasy{
 		extern Dynamic describe_AVInputFormat( AVInputFormat * iformat );
