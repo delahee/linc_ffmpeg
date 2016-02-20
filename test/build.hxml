@@ -1,6 +1,6 @@
 -main Test.hx
--cpp cpp/
--cp ../
+-cpp cpp
+-cp ..
 -debug
 -dce no
 # pick a target

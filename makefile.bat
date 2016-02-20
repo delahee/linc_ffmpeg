@@ -1,1 +1,0 @@
-cd test && build.hxml

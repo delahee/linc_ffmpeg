@@ -6,6 +6,7 @@ package ffmpeg;
 
 typedef FormatContext = cpp.Pointer<AVFormatContext>;
 typedef CodecContext = cpp.Pointer<AVCodecContext>;
+typedef InputFormat = cpp.Pointer<AVInputFormat>;
 
 @:keep
 @:include('linc_ffmpeg.h')
@@ -18,6 +19,9 @@ extern class FFmpeg
 {
 	@:native('avformat_alloc_context')
 	public static function avformat_alloc_context() : cpp.Pointer<AVFormatContext>;
+	
+	@:native('linc::aveasy::describe_AVInputFormat')
+    static function describe_AVInputFormat(iformat : InputFormat) : Dynamic;
 }
 
 @:native("AVFormatContext")
@@ -27,4 +31,8 @@ private extern class AVFormatContext { }
 
 @:native("AVCodecContext")
 @:include('linc_ffmpeg.h')
-private extern class AVCodecContext {}
+private extern class AVCodecContext { }
+
+@:native("AVInputFormat")
+@:include('linc_ffmpeg.h')
+private extern class AVInputFormat {}
