@@ -32,6 +32,10 @@ namespace linc {
 		namespace av{
 			extern String error( int errcode );
 		}
+		
+		namespace avcodec{
+			extern int openNoOpt( AVCodecContext * ctxt, AVCodec* codec);
+		}
     } 
 
 	namespace aveasy{

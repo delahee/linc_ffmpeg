@@ -51,6 +51,7 @@ class Test {
 		Av.registerAll();
 		
 		//
+		var errCode = 0;
 		var fc :cpp.Pointer<AVFormatContext> = AvFormat.allocContext();
 		trace("fresh fc:" + fc);
 		var filename = "data/SampleVideo_360x240_1mb.mp4";
@@ -97,7 +98,24 @@ class Test {
 			return;
 		}
 		
+		var codecCtx = video.ptr.codec;
+		var codec : cpp.ConstPointer< AVCodec > = codecCtx.ptr.codec;
 		
+		trace("codec?:" + codec);
+		//todo trackback to corrrect codec!
+		
+		var ctxtClone = AvCodec.allocContect3( codec );
+		AvCodec.copyContext( ctxtClone, codecCtx );
+		
+		if ( (errCode=AvCodec.openNoOpt(ctxtClone, codec)) < 0 ) {
+			trace( "cannot open codec" );
+			trace( Av.error(errCode) );
+			return;	
+		}
+		else {
+			trace( "opened" );
+		}
+		trace( "finished" );
     }
 
 }

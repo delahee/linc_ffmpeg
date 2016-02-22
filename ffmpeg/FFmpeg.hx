@@ -77,6 +77,19 @@ extern class AvFormat {
  	 : cpp.Pointer<AVStream>;
 }
 
+@:keep
+extern class AvCodec {
+	
+	@:native('avcodec_alloc_context3')
+	static function allocContect3( codec : cpp.ConstPointer<AVCodec> )
+	: cpp.Pointer<AVCodecContext>;
+	
+	@:native('avcodec_copy_context')
+	static function copyContext( dstCtxt:cpp.Pointer<AVCodecContext>, srcCtxt:cpp.ConstPointer<AVCodecContext> ) : Int;
+	
+	@:native('linc::ffmpeg::avcodec::openNoOpt')
+	static function openNoOpt( ctxt:cpp.Pointer<AVCodecContext>, codec : cpp.ConstPointer<AVCodec> ) : Int;
+}
 
 
 @:native("AVFormatContext")
@@ -95,17 +108,16 @@ extern class AVFormatContext {
 	var flags : Int;
 	
 	var streams  : cpp.Pointer<cpp.Pointer<AVStream>>;
-	
 }
 
 @:include('linc_ffmpeg.h')
 @:native("AVCodecContext") 	extern class AVCodecContext { 
 	var codec_type : AVMediaType;
-	
+	var codec : cpp.ConstPointer< AVCodec >;
 }
 
 @:include('linc_ffmpeg.h')
-@:native("AVCodec") 		extern class AVCodec { }
+@:native("AVCodec") 		extern class AVCodec {}
 
 @:include('linc_ffmpeg.h')
 @:native("AVFrame") 		extern class AVFrame { }

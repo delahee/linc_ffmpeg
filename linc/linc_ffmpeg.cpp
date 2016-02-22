@@ -49,6 +49,13 @@ namespace linc {
 				return ::String(err);
 			}
 		}
+		
+		namespace avcodec{
+			int openNoOpt( AVCodecContext * ctxt, AVCodec* codec )
+			{
+				return avcodec_open2(ctxt,codec,0);
+			}
+		}
 
     } //empty namespace
 
