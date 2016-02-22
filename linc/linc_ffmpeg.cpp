@@ -6,8 +6,41 @@
 #include <hxcpp.h>
 
 namespace linc {
-
     namespace ffmpeg {
+		namespace avformat{
+			Dynamic openInput(
+				::String filename, 
+				AVFormatContext*ctx,
+				AVInputFormat*fmt,
+				AVDictionary*dict
+			){
+				printf("openInput: %d %d %d\n",ctx,fmt,dict);
+				hx::Anon out = hx::Anon_obj::Create();
+				printf("*\n");
+				AVFormatContext** pctx = ctx==0? 0 : &ctx;
+				printf("*\n");
+				AVDictionary** pdict = dict==0?0: &dict;
+				printf("*\n");
+				int retCode = avformat_open_input(pctx,filename.c_str(),fmt,pdict);
+				printf("retCode %d *\n",retCode);
+				out->Add(HX_CSTRING("retCode"), retCode);
+				if( pctx ) 	out->Add(HX_CSTRING("ctx"), *pctx);
+				if( pdict ) out->Add(HX_CSTRING("opt"), *pdict);
+				printf("*\n");
+				return out;
+			}
+		}
+		
+		namespace av{
+			::String error( int errcode ){
+				char * err = (char*) malloc( 512 );
+				err[0]=0;
+				
+				av_make_error_string(err,512,errcode);
+				
+				return ::String(err);
+			}
+		}
 
     } //empty namespace
 
@@ -43,6 +76,14 @@ namespace linc {
 			out->Add(HX_CSTRING("read_seek2")		,iformat->read_seek2);
 			return out;
 		}
+		
+		/*
+		void modifyPtr( int ** val ) {
+			int * v = (int*) malloc( sizeof(int) );
+			*v = 1;
+			val = &v;
+		}
+		*/
 	}
 } //linc
 

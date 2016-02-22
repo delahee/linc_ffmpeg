@@ -10,15 +10,40 @@ package ffmpeg;
 @:build(linc.Linc.touch())
 @:build(linc.Linc.xml('ffmpeg'))
 #end
-
 extern class FFmpeg
 {
-	@:native('avformat_alloc_context')
-	public static function avformat_alloc_context() : cpp.Pointer<AVFormatContext>;
-	
 	@:native('linc::aveasy::describe_AVInputFormat')
     static function describe_AVInputFormat(iformat : cpp.Pointer<AVInputFormat>) : Dynamic;
 }
+
+@:keep
+extern class Av {
+	@:native('av_register_all')
+	public static function registerAll() : Void;
+	
+	@:native('linc::ffmpeg::av::error')
+	public static function error( code : Int ) : String;
+}
+
+@:keep
+extern class AvFormat {
+	
+	@:native('avformat_alloc_context')
+	static function allocContext() : cpp.Pointer<AVFormatContext>;
+	
+	@:native('avformat_network_init')
+	static function networkInit() : Void;
+	
+	@:native('linc::ffmpeg::avformat::openInput')
+	static function openInput( 
+		filename : String,
+		ps : cpp.Pointer<AVFormatContext>,//not memory managed 
+		fmt : cpp.Pointer<AVInputFormat>,
+		options : cpp.Pointer<AVDictionary>
+	) : { retCode:Int, ctx : cpp.Pointer<AVFormatContext>,opt:cpp.Pointer<AVDictionary> };
+}
+
+
 
 @:native("AVFormatContext")
 @:include('linc_ffmpeg.h')
@@ -36,38 +61,33 @@ extern class AVFormatContext {
 	var flags : Int;
 }
 
-@:native("AVCodecContext")
 @:include('linc_ffmpeg.h')
-extern class AVCodecContext { }
+@:native("AVCodecContext") 	extern class AVCodecContext { }
 
-@:native("AVCodec")
 @:include('linc_ffmpeg.h')
-extern class AVCodec { }
+@:native("AVCodec") 		extern class AVCodec { }
 
-@:native("AVFrame")
 @:include('linc_ffmpeg.h')
-extern class AVFrame { }
+@:native("AVFrame") 		extern class AVFrame { }
 
-@:native("AVInputFormat")
 @:include('linc_ffmpeg.h')
-extern class AVInputFormat { }
+@:native("AVInputFormat")	extern class AVInputFormat { }
 
-@:native("AVClass")
 @:include('linc_ffmpeg.h')
-extern class AVClass { }
+@:native("AVClass")			extern class AVClass { }
 
-@:native("AVOutputFormat")
 @:include('linc_ffmpeg.h')
-extern class AVOutputFormat { }
+@:native("AVOutputFormat")	extern class AVOutputFormat { }
 
-@:native("SwsContext")
-@:include('linc_ffmpeg.h')
-extern class SwsContext { }
+@:include('linc_ffmpeg.h') 
+@:native("SwsContext") 		extern class SwsContext { }
+
+@:include('linc_ffmpeg.h') 
+@:native("AVDictionary") 	extern class AVDictionary { }
+
 
 @:enum
-abstract AVPixelFormat (Int){ 
-	
-}
+abstract AVPixelFormat (Int){}
 
 
 

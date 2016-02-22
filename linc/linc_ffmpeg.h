@@ -5,33 +5,37 @@ extern "C" {
 #include "libavcodec/avcodec.h"
 #include "libavformat/avformat.h"
 #include "libavutil/avutil.h"
+#include "libavutil/dict.h"
 #include "libavdevice/avdevice.h"
 #include "libswscale/swscale.h"
 #include "libswresample/swresample.h"
 }
-//??
-//#pragma comment(lib, "avcodec.lib")
-/*
-#include "../lib/ffmpeg/include/libavdevice"
-#include "../lib/ffmpeg/include/libavfilter"
-#include "../lib/ffmpeg/include/libavutil"
-#include "../lib/ffmpeg/include/libavformat"
-#include "../lib/ffmpeg/include/libpostproc"
-#include "../lib/ffmpeg/include/libswscale"
-#include "../lib/ffmpeg/include/libswresample"
-*/
+
 #include <hxcpp.h>
 
 extern "C" {
 }
 
 namespace linc {
-
     namespace ffmpeg {
+		namespace avformat{
+			extern Dynamic openInput(
+				String filename, 
+				AVFormatContext*ctx,
+				AVInputFormat*fmt,
+				AVDictionary*dict
+			);
+		}
+		
+		namespace av{
+			extern String error( int errcode );
+		}
     } 
 
 	namespace aveasy{
 		extern Dynamic describe_AVInputFormat( AVInputFormat * iformat );
+		
+		extern void modifyPtr( int ** val );
 	}
 } //linc
 
