@@ -2,7 +2,7 @@
 -cpp cpp
 -cp ..
 -debug
--dce no
+-dce full
 -D windows
--D HXCPP_M32
+
 -cmd .\cpp\Test-Debug.exe

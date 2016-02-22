@@ -44,11 +44,11 @@ class Test {
 		var desc = ffmpeg.FFmpeg.describe_AVInputFormat( p );
 		trace( desc );
 		Av.registerAll();
-		
-		//trace( Sys.getCwd() );
-		
-		//var ret = AvFormat.openInput("../data/SampleVideo_360x240_1mb.mp4", AvFormat.allocContext(), cast null, cast null);
-		//trace( Av.error( ret.retCode ));
+		trace(Sys.getCwd());
+		var ret = AvFormat.openInput("data/SampleVideo_360x240_1mb.mp4", AvFormat.allocContext(), cast null, cast null);
+		if( ret.retCode != 0 )
+			trace( Av.error( ret.retCode ));
+		trace( ret );
 		
 		//var p = sys.io.File.read( "data/SampleVideo_360x240_1mb.mp4");
 		return 0;

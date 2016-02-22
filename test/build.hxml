@@ -14,6 +14,8 @@
 
 #-D HXCPP_M64
 -D HXCPP_M32
+-D HXCPP_LOAD_DEBUG
 
 #-cmd ./cpp/Test
 -cmd .\cpp\Test-Debug.exe
+
