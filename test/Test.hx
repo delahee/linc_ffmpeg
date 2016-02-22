@@ -40,18 +40,64 @@ class Test {
 		//var str = Sys.command("dir");
 		//trace("pop");
 		
-		var p = null;
-		var desc = ffmpeg.FFmpeg.describe_AVInputFormat( p );
-		trace( desc );
-		Av.registerAll();
+		//Ensure file system is available
 		trace(Sys.getCwd());
-		var ret = AvFormat.openInput("data/SampleVideo_360x240_1mb.mp4", AvFormat.allocContext(), cast null, cast null);
-		if( ret.retCode != 0 )
-			trace( Av.error( ret.retCode ));
-		trace( ret );
 		
-		//var p = sys.io.File.read( "data/SampleVideo_360x240_1mb.mp4");
-		return 0;
+		//Ensure C layer is binded
+		var desc = ffmpeg.FFmpeg.describe_AVInputFormat( cast null );
+		trace( desc );
+		
+		//let's start trying to decode something
+		Av.registerAll();
+		
+		//
+		var fc :cpp.Pointer<AVFormatContext> = AvFormat.allocContext();
+		trace("fresh fc:" + fc);
+		var filename = "data/SampleVideo_360x240_1mb.mp4";
+		var ret = AvFormat.openInput( filename, fc, cast null, cast null);
+		if ( ret.retCode < 0 ) {
+			trace( "Error" );
+			trace( Av.error( ret.retCode ));
+			return;
+		}
+		trace("file opened " + ret);
+		//trace(ret.ctx);
+		
+		// Dump information about file onto standard error
+		Av.dumpFormat(fc, 0, filename, 0);
+		
+		var nbStream : Int = cast fc.ptr.nb_streams;
+		var base = fc.ptr.streams; 
+		var video = null;
+		trace( fc );
+		trace("inspecting streams "+nbStream+ " from "+ fc.ptr.streams);
+		for ( i in 0...nbStream ) 
+		{
+			//trace(base);
+			var stream = AvFormat.nthStream( fc, i );
+			var codec = stream.ptr.codec;
+			if ( codec.ptr.codec_type == AVMEDIA_TYPE_VIDEO )
+				video = stream;
+			//var stream = fc.ref.streams.incBy(i).raw;
+			//equivalent to fc.incBy(i) ?
+			
+			
+			//trace(stream);
+			//var stream : cpp.Pointer<AVStream> = base.ptr;
+			//var streamCodec : cpp.Pointer<AVCodecContext> = stream.ptr.codec;
+			//base = base.inc();
+			//trace("inspected stream "+i);
+		}
+		
+		if ( video != null) {
+			trace("found video "+video);
+		}
+		else {
+			trace( "No video found" );
+			return;
+		}
+		
+		
     }
 
 }

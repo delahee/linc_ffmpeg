@@ -25,6 +25,8 @@ namespace linc {
 				AVInputFormat*fmt,
 				AVDictionary*dict
 			);
+			
+			extern AVStream * nthStream(AVFormatContext*ctx, int nth);
 		}
 		
 		namespace av{

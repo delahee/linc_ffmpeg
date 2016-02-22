@@ -7,6 +7,11 @@
 
 namespace linc {
     namespace ffmpeg {
+		
+		void trace(::String str){
+			printf("%s\n",str.c_str());
+		}
+		
 		namespace avformat{
 			Dynamic openInput(
 				::String filename, 
@@ -14,20 +19,23 @@ namespace linc {
 				AVInputFormat*fmt,
 				AVDictionary*dict
 			){
-				printf("openInput: %d %d %d\n",ctx,fmt,dict);
 				hx::Anon out = hx::Anon_obj::Create();
-				printf("*\n");
-				AVFormatContext** pctx = ctx==0? 0 : &ctx;
-				printf("*\n");
-				AVDictionary** pdict = dict==0?0: &dict;
-				printf("*\n");
+				printf("%d\n",ctx);
+				AVFormatContext** pctx = (ctx==0)? 0 : &ctx;
+				printf("%d\n",ctx);
+				AVDictionary** pdict = (dict==0)?0: &dict;
 				int retCode = avformat_open_input(pctx,filename.c_str(),fmt,pdict);
-				printf("retCode %d *\n",retCode);
 				out->Add(HX_CSTRING("retCode"), retCode);
-				if( pctx ) 	out->Add(HX_CSTRING("ctx"), *pctx);
-				if( pdict ) out->Add(HX_CSTRING("opt"), *pdict);
-				printf("*\n");
+				
+				//does output boolean values...
+				//if( ctx ) 			out->Add(HX_CSTRING("ctx"), ctx);
+				if( pdict != 0 ) 	out->Add(HX_CSTRING("opt"), *pdict);
+				
 				return out;
+			}
+			
+			AVStream * nthStream(AVFormatContext*ctx, int nth){
+				return ctx->streams[nth];
 			}
 		}
 		
