@@ -55,6 +55,7 @@ class Test {
 		var fc :cpp.Pointer<AVFormatContext> = AvFormat.allocContext();
 		trace("fresh fc:" + fc);
 		var filename = "data/SampleVideo_360x240_1mb.mp4";
+		//var filename = "data/centaur_1.mpg";
 		var ret = AvFormat.openInput( filename, fc, cast null, cast null);
 		if ( ret.retCode < 0 ) {
 			trace( "Error" );
@@ -70,15 +71,17 @@ class Test {
 		var nbStream : Int = cast fc.ptr.nb_streams;
 		var base = fc.ptr.streams; 
 		var video = null;
+		var videoStreamIdx = -1;
 		trace( fc );
 		trace("inspecting streams "+nbStream+ " from "+ fc.ptr.streams);
-		for ( i in 0...nbStream ) 
-		{
+		for ( i in 0...nbStream ) {
 			//trace(base);
 			var stream = AvFormat.nthStream( fc, i );
 			var codec = stream.ptr.codec;
-			if ( codec.ptr.codec_type == AVMEDIA_TYPE_VIDEO )
+			if ( codec.ptr.codec_type == AVMEDIA_TYPE_VIDEO ){
 				video = stream;
+				videoStreamIdx = i;
+			}
 			//var stream = fc.ref.streams.incBy(i).raw;
 			//equivalent to fc.incBy(i) ?
 			
@@ -91,7 +94,7 @@ class Test {
 		}
 		
 		if ( video != null) {
-			trace("found video "+video);
+			trace("found video " + video);
 		}
 		else {
 			trace( "No video found" );
@@ -103,6 +106,16 @@ class Test {
 		codec = AvCodec.findDecoder(codecCtx.ptr.codec_id);
 		if ( codec == null ) {
 			trace("Unsupported codec! #"+codecCtx.ptr.codec_id);
+		}
+		else {
+			trace("ctxt:" + codecCtx 
+			+ " fmt:" + codecCtx.ptr.pix_fmt
+			+ " sw_pix_fmt:" + codecCtx.ptr.sw_pix_fmt
+			+" w:"+codecCtx.ptr.width
+			+" h:" + codecCtx.ptr.height
+			//+" id:" + Std.string(codecCtx.ptr.codec_id)
+			//+" br:"+codecCtx.ptr.bit_rate 
+			);
 		}
 		
 		trace("codec?:" + codec);
@@ -123,11 +136,46 @@ class Test {
 		var frame : cpp.Pointer <AVFrame> = null;
 		frame = AvFrame.alloc();
 		
-		var pxFmt : AVPixelFormat = cast PIX_FMT_RGB24;
-		var nbytes = AvPicture.getSize(pxFmt, 	codecCtx.ptr.width,
-														codecCtx.ptr.height);
+		var rgb = AVPixelFormat.AV_PIX_FMT_RGB24.toNative();
+		var nbytes = AvPicture.getSize( rgb, codecCtx.ptr.width, codecCtx.ptr.height);
+		trace("need " + nbytes + " bytes ");
 		
+		var buffer_u8 : cpp.RawPointer<cpp.UInt8> = cast Av.malloc(nbytes);
+		
+		trace( "allocated:" + buffer_u8);
+		
+		
+		var pic : cpp.Pointer<AVPicture> = cast frame;
+		var sz = AvPicture.fill(pic, buffer_u8, rgb, codecCtx.ptr.width, codecCtx.ptr.height);
+		trace("filled " + sz );
+		
+		var frameFinished : Bool;
+		var packetPtr : cpp.Pointer<AVPacket> = untyped __cpp__("new AVPacket()");
+		
+		/*
+		trace( "origin pix fmt:"+codecCtx.ptr.pix_fmt );
+		var swsCtx : cpp.Pointer<SwsContext> = Sws.getContext(
+			codecCtx.ptr.width,
+			codecCtx.ptr.height,
+			codecCtx.ptr.pix_fmt,
 			
+			codecCtx.ptr.width,
+			codecCtx.ptr.height,
+			rgb,
+			
+			SwsFlags.SWS_FAST_BILINEAR,
+			cast null,
+			cast null,
+			cast null
+			);
+		*/
+		var i=0;
+		while (Av.readFrame(fc, packetPtr ) >= 0) {
+			if (packetPtr.ptr.stream_index == videoStreamIdx) {
+				//TODO
+			}
+		}
+		
 		trace( "finished" );
     }
 

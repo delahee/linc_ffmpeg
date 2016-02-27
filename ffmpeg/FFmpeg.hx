@@ -41,6 +41,15 @@ extern class Av {
 					index : Int,
 					url : cpp.ConstCharStar,
 					is_output:Int) : Void;
+			
+	@:native('av_malloc')
+	public static function malloc(size : UInt) : cpp.RawPointer<cpp.Void>;
+	
+	@:native('av_free')
+	public static function free(ptr : cpp.RawPointer<cpp.Void>) : Void;
+	
+	@:native('av_read_frame')
+	public static function readFrame(fc:cpp.Pointer<AVFormatContext>,pck:cpp.Pointer<AVPacket>) : Int;
 }
 
 @:keep
@@ -103,7 +112,23 @@ extern class AvFrame {
 @:keep
 extern class AvPicture {
 	@:native('avpicture_get_size')
-	static function getSize(fmt:AVPixelFormat,w:Int,h:Int) : Int;
+	static function getSize(fmt:_AVPixelFormat, w:Int, h:Int) : Int;
+	
+	@:native('avpicture_fill')
+	static function fill(pic:cpp.Pointer<AVPicture>, buf:cpp.RawPointer<cpp.UInt8> , fmt:_AVPixelFormat, w:Int, h:Int):Int;
+}
+
+@:keep
+extern class Sws {
+	@:native('sws_getContext')
+	static function getContext(
+		srcW:Int, srcH:Int, srcFmt:_AVPixelFormat,
+		dstW:Int, dstH:Int, dstFmt:_AVPixelFormat,
+		flags:Int,
+		srcFilter:cpp.Pointer<SwsFilter>,
+		dstFilter:cpp.Pointer<SwsFilter>,
+		param:cpp.Pointer<cpp.Float64>
+		) : cpp.Pointer<SwsContext>;
 }
 
 
@@ -132,13 +157,36 @@ extern class AVFormatContext {
 	var codec : cpp.ConstPointer< AVCodec >;
 	var width:Int;
 	var height:Int;
+	var bit_rate:Int;
+	var pix_fmt : _AVPixelFormat;
+	var sw_pix_fmt : _AVPixelFormat;
+}
+
+@:include("linc_ffmpeg.h")
+@:native("AVPacket")
+extern class AVPacket{
+	var stream_index:Int;
+}
+
+@:native("cpp.Struct<AVPacket>")
+extern class AVPacketStruct extends AVPacket{}
+
+@:include('linc_ffmpeg.h')
+@:native("AVCodec") 		extern class AVCodec { }
+
+
+
+
+@:include('linc_ffmpeg.h')
+@:native("AVFrame") 		extern class AVFrame { 
+	var width : Int;
+	var height : Int;
+	var colorspace : Int;
+	var format : _AVPixelFormat;
 }
 
 @:include('linc_ffmpeg.h')
-@:native("AVCodec") 		extern class AVCodec {}
-
-@:include('linc_ffmpeg.h')
-@:native("AVFrame") 		extern class AVFrame { }
+@:native("AVPicture") 		extern class AVPicture { }
 
 @:include('linc_ffmpeg.h')
 @:native("AVInputFormat")	extern class AVInputFormat { }
@@ -163,13 +211,27 @@ extern class AVFormatContext {
 @:include('linc_ffmpeg.h') 
 @:native("AVDictionary") 	extern class AVDictionary { }
 
+@:include("linc_ffmpeg.h")
+@:native("AVPixelFormat")	extern class _AVPixelFormat{ }
 
+@:include('linc_ffmpeg.h')
+@:native("SwsFilter") 		extern class SwsFilter {}
+
+/**
+ * @see https://groups.google.com/forum/#!topic/Haxelang/cirmD1EZGMA
+ */
 @:enum
-abstract AVPixelFormat (Int) { 
-	var PIX_FMT_NONE 		= 0;
-	var PIX_FMT_YUV420P 	= 1;
-	var PIX_FMT_YUYV422 	= 2;
-	var PIX_FMT_RGB24 		= 3; 
+abstract AVPixelFormat (Int) from Int to Int{ 
+	var AV_PIX_FMT_NONE 	= -1;
+	var AV_PIX_FMT_YUV420P 	= 0;
+	var AV_PIX_FMT_YUYV422 	= 1;
+	var AV_PIX_FMT_RGB24 	= 2; 
+	
+	@:to(_AVPixelFormat)
+	@:unreflective
+	inline public function toNative() : _AVPixelFormat {
+		return untyped __cpp__("((AVPixelFormat)({0}))",this);
+	}
 }
 
 @:enum
@@ -185,5 +247,18 @@ abstract  AVMediaType (Int) {
 }
 
 
-
+@:enum 
+abstract  SwsFlags (Int) to Int { 
+	var SWS_FAST_BILINEAR  	= 1;
+	var SWS_BILINEAR   	= 2		;
+	var SWS_BICUBIC   	= 4     ;
+	var SWS_X   		= 8     ;
+	var SWS_POINT   	= 0x10  ;
+	var SWS_AREA   		= 0x20  ;
+	var SWS_BICUBLIN   	= 0x40  ;
+	var SWS_GAUSS   	= 0x80  ;
+	var SWS_SINC   		= 0x100 ;
+	var SWS_LANCZOS  	= 0x200 ;
+	var SWS_SPLINE  	= 0x400 ;
+}
 
