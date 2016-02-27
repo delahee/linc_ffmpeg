@@ -89,6 +89,21 @@ extern class AvCodec {
 	
 	@:native('linc::ffmpeg::avcodec::openNoOpt')
 	static function openNoOpt( ctxt:cpp.Pointer<AVCodecContext>, codec : cpp.ConstPointer<AVCodec> ) : Int;
+	
+	@:native('avcodec_find_decoder')
+	static function findDecoder( codecId : AVCodecID ) : cpp.Pointer<AVCodec>;
+}
+
+@:keep
+extern class AvFrame {
+	@:native('av_frame_alloc')
+	static function alloc() : cpp.Pointer<AVFrame>;
+}
+
+@:keep
+extern class AvPicture {
+	@:native('avpicture_get_size')
+	static function getSize(fmt:AVPixelFormat,w:Int,h:Int) : Int;
 }
 
 
@@ -113,7 +128,10 @@ extern class AVFormatContext {
 @:include('linc_ffmpeg.h')
 @:native("AVCodecContext") 	extern class AVCodecContext { 
 	var codec_type : AVMediaType;
+	var codec_id : AVCodecID;
 	var codec : cpp.ConstPointer< AVCodec >;
+	var width:Int;
+	var height:Int;
 }
 
 @:include('linc_ffmpeg.h')
@@ -147,7 +165,15 @@ extern class AVFormatContext {
 
 
 @:enum
-abstract AVPixelFormat (Int) { }
+abstract AVPixelFormat (Int) { 
+	var PIX_FMT_NONE 		= 0;
+	var PIX_FMT_YUV420P 	= 1;
+	var PIX_FMT_YUYV422 	= 2;
+	var PIX_FMT_RGB24 		= 3; 
+}
+
+@:enum
+abstract AVCodecID (Int) { }
 
 @:enum 
 abstract  AVMediaType (Int) { 

@@ -1,5 +1,5 @@
 /**
- * testing procedure excerpt from aveasy ( https://github.com/datenwolf/aveasy )
+ * following http://dranger.com/ffmpeg/tutorial01.html
  */
 
 import ffmpeg.FFmpeg;
@@ -99,7 +99,11 @@ class Test {
 		}
 		
 		var codecCtx = video.ptr.codec;
-		var codec : cpp.ConstPointer< AVCodec > = codecCtx.ptr.codec;
+		var codec : cpp.ConstPointer< AVCodec >;// = codecCtx.ptr.codec;
+		codec = AvCodec.findDecoder(codecCtx.ptr.codec_id);
+		if ( codec == null ) {
+			trace("Unsupported codec! #"+codecCtx.ptr.codec_id);
+		}
 		
 		trace("codec?:" + codec);
 		//todo trackback to corrrect codec!
@@ -115,6 +119,15 @@ class Test {
 		else {
 			trace( "opened" );
 		}
+		
+		var frame : cpp.Pointer <AVFrame> = null;
+		frame = AvFrame.alloc();
+		
+		var pxFmt : AVPixelFormat = cast PIX_FMT_RGB24;
+		var nbytes = AvPicture.getSize(pxFmt, 	codecCtx.ptr.width,
+														codecCtx.ptr.height);
+		
+			
 		trace( "finished" );
     }
 
