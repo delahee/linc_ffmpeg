@@ -75,6 +75,9 @@ extern class AvFormat {
 	@:native('avformat_network_init')
 	static function networkInit() : Void;
 	
+	@:native('avformat_close_input')
+	static function closeInput(ctxt : cpp.RawPointer<cpp.RawPointer<AVFormatContext>>) : Void;
+	
 	@:native('linc::ffmpeg::avformat::openInput')
 	static function openInput( 
 		filename : String,
@@ -110,6 +113,10 @@ extern class AvCodec {
 		fr:cpp.Pointer<AVFrame>,
 		finished:cpp.Pointer<Int>,
 		pckt : cpp.ConstPointer<AVPacket>): Int;
+		
+	@:native('avcodec_close')
+	static function close( ctx:cpp.Pointer<AVCodecContext> ) : Void;
+	
 }
 
 @:keep

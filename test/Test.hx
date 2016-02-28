@@ -144,7 +144,6 @@ class Test {
 		
 		trace( "allocated:" + buffer_u8);
 		
-		
 		var pic : cpp.Pointer<AVPicture> = cast frameRgb;
 		var sz = AvPicture.fill(pic, buffer_u8, rgb, codecCtx.ptr.width, codecCtx.ptr.height);
 		trace("filled " + sz );
@@ -185,23 +184,26 @@ class Test {
 						trace("ctx:"+swsCtx);
 					}
 					
-					//var rawFrame : cpp.ConstPointer<cpp.UInt8> = cpp.Pointer.fromRaw( cpp.Pointer.fromRaw( frame.ptr.data ).at(0) );
-					//var rawFrameRgb : cpp.Pointer<cpp.UInt8> = cpp.Pointer.fromRaw( cpp.Pointer.fromRaw( frameRgb.ptr.data ).at(0) );
-					
 					Sws.scale(	swsCtx, frame.ptr.data,
 								frame.ptr.linesize, 0, ctxtClone.ptr.height,
 								frameRgb.ptr.data, frameRgb.ptr.linesize);
 					  
-					//trace( frame.ptr.format );
-					if (++i <= 5){
-						//Helper.saveFrameToPPM(frame, ctxtClone.ptr.width, ctxtClone.ptr.height, i);
+					if (++i <= 5)
 						Helper.saveFrameToPPM(frameRgb, ctxtClone.ptr.width, ctxtClone.ptr.height, i);
-						//i = 0;
-					}
+						
 				}
 			}
 		}
 		
+		Av.free( cast buffer_u8 );
+		Av.free( cast frame.raw );
+		Av.free( cast frameRgb.raw );
+		AvCodec.close( codecCtx );
+		AvCodec.close( ctxtClone );
+		
+		var raw : cpp.RawPointer<AVFormatContext> = fc.get_raw();
+		var rawraw : cpp.RawPointer<cpp.RawPointer<AVFormatContext>> = cpp.Pointer.addressOf( raw ).get_raw();
+		AvFormat.closeInput( rawraw );
 		trace( "finished" );
     }
 
