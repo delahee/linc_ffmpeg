@@ -133,8 +133,8 @@ class Test {
 			trace( "opened" );
 		}
 		
-		var frame : cpp.Pointer <AVFrame> = null;
-		frame = AvFrame.alloc();
+		var frame : cpp.Pointer <AVFrame> = AvFrame.alloc();
+		var frameRgb = AvFrame.alloc();
 		
 		var rgb : _AVPixelFormat = AVPixelFormat.AV_PIX_FMT_RGB24.toNative();
 		var nbytes = AvPicture.getSize( rgb, codecCtx.ptr.width, codecCtx.ptr.height);
@@ -145,7 +145,7 @@ class Test {
 		trace( "allocated:" + buffer_u8);
 		
 		
-		var pic : cpp.Pointer<AVPicture> = cast frame;
+		var pic : cpp.Pointer<AVPicture> = cast frameRgb;
 		var sz = AvPicture.fill(pic, buffer_u8, rgb, codecCtx.ptr.width, codecCtx.ptr.height);
 		trace("filled " + sz );
 		
@@ -184,9 +184,20 @@ class Test {
 						swsCtx = makeSwsContext(fmt);
 						trace("ctx:"+swsCtx);
 					}
+					
+					//var rawFrame : cpp.ConstPointer<cpp.UInt8> = cpp.Pointer.fromRaw( cpp.Pointer.fromRaw( frame.ptr.data ).at(0) );
+					//var rawFrameRgb : cpp.Pointer<cpp.UInt8> = cpp.Pointer.fromRaw( cpp.Pointer.fromRaw( frameRgb.ptr.data ).at(0) );
+					
+					Sws.scale(	swsCtx, frame.ptr.data,
+								frame.ptr.linesize, 0, ctxtClone.ptr.height,
+								frameRgb.ptr.data, frameRgb.ptr.linesize);
+					  
 					//trace( frame.ptr.format );
-					if (++i <= 5)
-						saveFrameToPPM(pFrameRGB, pCodecCtx->width, pCodecCtx->height, i);
+					if (++i <= 5){
+						//Helper.saveFrameToPPM(frame, ctxtClone.ptr.width, ctxtClone.ptr.height, i);
+						Helper.saveFrameToPPM(frameRgb, ctxtClone.ptr.width, ctxtClone.ptr.height, i);
+						//i = 0;
+					}
 				}
 			}
 		}

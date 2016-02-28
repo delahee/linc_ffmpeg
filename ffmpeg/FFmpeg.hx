@@ -19,7 +19,7 @@ extern class FFmpeg
 	@:native('linc::aveasy::describe_AVInputFormat')
     static function describe_AVInputFormat(iformat : cpp.Pointer<AVInputFormat>) : Dynamic;
 	
-	function 
+	
 }
 
 //(int( * cb)(void ** mutex, enum AVLockOp op)
@@ -138,6 +138,17 @@ extern class Sws {
 		dstFilter:cpp.Pointer<SwsFilter>,
 		param:cpp.Pointer<cpp.Float64>
 		) : cpp.Pointer<SwsContext>;
+		
+	@:native('sws_scale')
+	static function scale(
+		ctxt : cpp.Pointer<SwsContext>,
+		src : cpp.RawPointer<cpp.RawPointer<cpp.UInt8>>,
+		srcStride : cpp.Pointer<Int>,
+		srcSliceY : Int,
+		srcSliceH : Int,
+		dst : cpp.RawPointer<cpp.RawPointer<cpp.UInt8>>,
+		dstStride : cpp.Pointer<Int>
+	) : Int;
 }
 
 
@@ -187,11 +198,19 @@ extern class AVPacketStruct extends AVPacket{}
 
 
 @:include('linc_ffmpeg.h')
-@:native("AVFrame") 		extern class AVFrame { 
-	var width : Int;
-	var height : Int;
-	var colorspace : Int;
-	var format : _AVPixelFormat;
+@:native("AVFrame") 
+extern class AVFrame { 
+	var data 			: cpp.RawPointer<cpp.RawPointer<cpp.UInt8>>; //u8 * data[AV_NUM_DATA_POINTERS]
+	var linesize 		: cpp.Pointer<Int>; //int data[AV_NUM_DATA_POINTERS]
+	
+	var width 			: Int;
+	var height 			: Int;
+	var colorspace 		: Int;
+	var sample_rate 	: Int;
+	var format 			: _AVPixelFormat;
+	var flags		 	: Int;
+	var channels	 	: Int;
+	var pkt_size	 	: Int;
 }
 
 @:include('linc_ffmpeg.h')
@@ -271,3 +290,40 @@ abstract  SwsFlags (Int) to Int {
 	var SWS_SPLINE  	= 0x400 ;
 }
 
+class Helper {
+	
+	public static inline function ptrToArray<T>( ptr:cpp.Pointer<T>,length:Int ):Array<T> {
+		var a :Array<T>= [];
+		//cpp.NativeArray.setUnmanagedData( a, ptr,
+		//untyped a.setUnmanagedData(cpp.CastCharStar ptr.raw, length);
+		untyped __cpp__("{0}->setUnmanagedData({1},{2});",a,ptr.raw,length);
+		return a;
+	}
+	
+	public static function saveFrameToPPM(fr:cpp.Pointer<AVFrame>, width:Int, height:Int, i:Int) {
+		var w = new haxe.io.BytesOutput();
+		w.writeString("P6\n" + width + " " + height + "\n255\n");
+		
+		var dataPtr = cpp.Pointer.fromRaw( fr.ptr.data );
+		var buf : cpp.RawPointer<cpp.UInt8> = dataPtr.at(0);
+		var bufPtr = cpp.Pointer.fromRaw(buf);
+		var lineSizePtr :cpp.Pointer<Int>= fr.ptr.linesize;
+		var lineSize = lineSizePtr.at(0);
+		
+		for (y in 0...height) {
+			var	linePtr : cpp.Pointer<cpp.UInt8>= bufPtr.add( y * lineSize );
+			var pos = 0;
+			//Awefully Slow
+			for ( x in 0...width) {
+				w.writeByte( linePtr.at( pos ) );
+				w.writeByte( linePtr.at( pos+1 ) );
+				w.writeByte( linePtr.at( pos+2 ) );
+				pos += 3;
+			}
+		}
+		
+		var file = sys.io.File.write( "frame" + i + ".ppm", true);
+		file.writeInput( new haxe.io.BytesInput( w.getBytes() ) );
+		file.close();
+	}
+}
