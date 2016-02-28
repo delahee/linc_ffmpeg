@@ -136,7 +136,7 @@ class Test {
 		var frame : cpp.Pointer <AVFrame> = null;
 		frame = AvFrame.alloc();
 		
-		var rgb = AVPixelFormat.AV_PIX_FMT_RGB24.toNative();
+		var rgb : _AVPixelFormat = AVPixelFormat.AV_PIX_FMT_RGB24.toNative();
 		var nbytes = AvPicture.getSize( rgb, codecCtx.ptr.width, codecCtx.ptr.height);
 		trace("need " + nbytes + " bytes ");
 		
@@ -149,30 +149,45 @@ class Test {
 		var sz = AvPicture.fill(pic, buffer_u8, rgb, codecCtx.ptr.width, codecCtx.ptr.height);
 		trace("filled " + sz );
 		
-		var frameFinished : Bool;
+		var frameFinished : Int = 0;
 		var packetPtr : cpp.Pointer<AVPacket> = untyped __cpp__("new AVPacket()");
+		var swsCtx : cpp.Pointer<SwsContext> = null;
 		
-		/*
-		trace( "origin pix fmt:"+codecCtx.ptr.pix_fmt );
-		var swsCtx : cpp.Pointer<SwsContext> = Sws.getContext(
-			codecCtx.ptr.width,
-			codecCtx.ptr.height,
-			codecCtx.ptr.pix_fmt,
-			
-			codecCtx.ptr.width,
-			codecCtx.ptr.height,
-			rgb,
-			
-			SwsFlags.SWS_FAST_BILINEAR,
-			cast null,
-			cast null,
-			cast null
-			);
-		*/
+		inline function makeSwsContext( fmt : AVPixelFormat  ) {
+			//trace( "origin pix fmt:"+fmt );
+			var swsCtx : cpp.Pointer<SwsContext> = Sws.getContext(
+				codecCtx.ptr.width,
+				codecCtx.ptr.height,
+				fmt.toNative(),
+				
+				codecCtx.ptr.width,
+				codecCtx.ptr.height,
+				rgb,
+				
+				SwsFlags.SWS_FAST_BILINEAR,
+				cast null,
+				cast null,
+				cast null
+				);
+			return swsCtx;
+		}
+		
 		var i=0;
 		while (Av.readFrame(fc, packetPtr ) >= 0) {
 			if (packetPtr.ptr.stream_index == videoStreamIdx) {
 				//TODO
+				AvCodec.decodeVideo2( ctxtClone, frame, cpp.Pointer.addressOf(frameFinished), packetPtr );
+				
+				if ( frameFinished != 0 ) {
+					var fmt : AVPixelFormat = cast frame.ptr.format;
+					if ( swsCtx == null) {
+						swsCtx = makeSwsContext(fmt);
+						trace("ctx:"+swsCtx);
+					}
+					//trace( frame.ptr.format );
+					if (++i <= 5)
+						saveFrameToPPM(pFrameRGB, pCodecCtx->width, pCodecCtx->height, i);
+				}
 			}
 		}
 		

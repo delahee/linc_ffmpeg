@@ -18,6 +18,8 @@ extern class FFmpeg
 {
 	@:native('linc::aveasy::describe_AVInputFormat')
     static function describe_AVInputFormat(iformat : cpp.Pointer<AVInputFormat>) : Dynamic;
+	
+	function 
 }
 
 //(int( * cb)(void ** mutex, enum AVLockOp op)
@@ -101,6 +103,13 @@ extern class AvCodec {
 	
 	@:native('avcodec_find_decoder')
 	static function findDecoder( codecId : AVCodecID ) : cpp.Pointer<AVCodec>;
+	
+	@:native('avcodec_decode_video2')
+	static function decodeVideo2(
+		ctx:cpp.Pointer<AVCodecContext>,
+		fr:cpp.Pointer<AVFrame>,
+		finished:cpp.Pointer<Int>,
+		pckt : cpp.ConstPointer<AVPacket>): Int;
 }
 
 @:keep
