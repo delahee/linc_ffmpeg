@@ -1,6 +1,6 @@
 # linc_ffmpeg
 
-The linc FFmpeg is a low level stub for the ffmpeg library (https://www.ffmpeg.org/) in the haxe language. It is not part of the snowkit Linc initiative ( yet ? ) but we tried to follow the guidelines, they put up.
+The linc FFmpeg is a low level stub for the ffmpeg library (https://www.ffmpeg.org/) in the haxe language. It is not part of the snowkit Linc initiative ( yet ? ) but we tried to follow the guidelines they put up.
 
 We also tried to stick as much as possible to raw binding and tried not to reinterpret the library so that regular ffmpeg tutorials are easy to follow.
 
