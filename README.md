@@ -27,7 +27,9 @@ Contributing ?
 - We accept contributions, no problem, please stick to codestyle and test your work.
 
 Hardware acceleration ? 
-- Be wary that on performance sensitive platoforms like android/ios, ffmpeg will underperform because blitting video requires heavy CPU bandwith as GPU Blitting is not so easy to get working. The HW decoding would be taken care by your build like in all ffmpeg release and GPU blitting would be taken care by your video playing setup lib ( like SDL or Native whatever ). So we strongly emphasize that hw and performances are generally a problem with linc_ffmpeg as there are strictly no overhead with this haxe layer but with the setups.
+- Be wary that on performance sensitive platoforms like android/ios, ffmpeg will underperform because blitting video requires heavy CPU bandwith as GPU Blitting is not so easy to get working. The HW decoding would be taken care by your build like in all ffmpeg release and GPU blitting would be taken care by your video playing setup lib ( like SDL or Native whatever ). 
+ 
+We strongly emphasize that hw and performances are generally a touchy problem with ffmpeg, the layer itself is free of superfluous allocation so everything should be in order but be careful about setup.
 
 
 
