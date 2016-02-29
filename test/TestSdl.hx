@@ -10,13 +10,27 @@ import sdl.SDL.*;
 import sdl.Window;
 import sdl.Renderer;
 import sdl.Surface;
+import sdl.Texture;
 
-
+class State{
+	public var window:Window;
+	public var renderer:Renderer;
+	public var videoTexture:Texture;
+	
+	public var buffer_u8 : cpp.RawPointer<cpp.UInt8>;
+	public var frame : cpp.Pointer<AVFrame>;
+	public var frameRgb: cpp.Pointer<AVFrame>;
+	public var codecCtx: cpp.Pointer<AVCodecContext>;
+	public var ctxtClone: cpp.Pointer<AVCodecContext>;
+	public var fc: cpp.Pointer<AVFormatContext>;
+	
+	public function new() {
+		
+	}
+}
 
 class TestSdl {
-	static var state : {
-		var screen:Window;
-		}={ screen:null};
+	static var st = new State();
 	
     static function main() {
 		
@@ -96,11 +110,23 @@ class TestSdl {
 		var h = codecCtx.ptr.height;
 		
 		var undef = sdl.SDL.SDLWindowPos.SDL_WINDOWPOS_UNDEFINED;
-		state.screen = SDL.createWindow("video",undef,undef,w,h,0);
-		if(state.screen!=null) {
-			trace("SDL: could not set video mode - exiting\n");
+		var create = SDL.createWindowAndRenderer(w, h, 0);
+		
+		st.window = create.window;
+		st.renderer = create.renderer;
+		if(st.window==null) {
+			trace("SDL: could not create window");
 			return;
 		}
+		else 
+			trace("SDL: window opened");
+		
+		var renderer : Renderer = st.renderer;
+		st.videoTexture = SDL.createTexture(renderer, SDL_PIXELFORMAT_YV12, SDL_TEXTUREACCESS_STREAMING, w, h);
+		if(null==st.videoTexture) {
+			trace("Couldn't set create texture\n");
+			return;
+		} else trace("created streamed yuv texture");
 		
 		var ctxtClone = AvCodec.allocContect3( codec );
 		AvCodec.copyContext( ctxtClone, codecCtx );
@@ -132,6 +158,14 @@ class TestSdl {
 		var frameFinished : Int = 0;
 		var packetPtr : cpp.Pointer<AVPacket> = untyped __cpp__("new AVPacket()");
 		var swsCtx : cpp.Pointer<SwsContext> = null;
+		
+		st.buffer_u8 = buffer_u8;
+		st.frame = frame;
+		st.frameRgb = frameRgb;
+		st.codecCtx = codecCtx;
+		st.frameRgb = frameRgb;
+		st.ctxtClone = ctxtClone;
+		st.fc = fc;
 		
 		inline function makeSwsContext( fmt : AVPixelFormat  ) {
 			//trace( "origin pix fmt:"+fmt );
@@ -176,16 +210,23 @@ class TestSdl {
 			}
 		}
 		
-		Av.free( cast buffer_u8 );
-		Av.free( cast frame.raw );
-		Av.free( cast frameRgb.raw );
-		AvCodec.close( codecCtx );
-		AvCodec.close( ctxtClone );
+		destroy(st);
+    }
+	
+	static function destroy(st:State) {
+		Av.free( cast st.buffer_u8 );
+		Av.free( cast st.frame.raw );
+		Av.free( cast st.frameRgb.raw );
+		AvCodec.close( st.codecCtx );
+		AvCodec.close( st.ctxtClone );
 		
-		var raw : cpp.RawPointer<AVFormatContext> = fc.get_raw();
+		SDL.destroyRenderer(st.renderer);
+		SDL.destroyTexture(st.videoTexture);
+		
+		var raw : cpp.RawPointer<AVFormatContext> = st.fc.get_raw();
 		var rawraw : cpp.RawPointer<cpp.RawPointer<AVFormatContext>> = cpp.Pointer.addressOf( raw ).get_raw();
 		AvFormat.closeInput( rawraw );
 		trace( "finished" );
-    }
+	}
 
 }
