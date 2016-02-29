@@ -17,6 +17,9 @@ What is the state of the library ?
 Is there dependencies ?
 - We use ffmpeg binaries directly so ffmpeg binaries is a dependency, no other libraries should be involved.
 
+Why choose binaries not recompile source ?
+- Ffmpeg requires a tremendous amount of libs to be built, since there are good quality binaries, let's disminish the burden of rebuilding.
+
 Which platform are available ?
 - Ffmpeg binaries exists for nearly all platforms ever, currently we only aim for win32 and macos support feel free to submit PR for binaries but be careful with testing first. ( And testing ffmpeg is quite challenging )
 
