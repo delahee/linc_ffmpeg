@@ -11,6 +11,9 @@ Snowkit's Linc : http://snowkit.github.io/linc/
 
 Q&A :
 
+What is the state of the library ?
+- Is is under active development, we are now dumping data, decoding frames, next step is having an operational SDL player.
+
 Is there dependencies ?
 - We use ffmpeg binaries directly so ffmpeg binaries is a dependency, no other libraries should be involved.
 
