@@ -1,5 +1,5 @@
 /**
- * following http://dranger.com/ffmpeg/tutorial01.html
+ * following http://dranger.com/ffmpeg/tutorial02.html
  */
 
 import ffmpeg.FFmpeg;
