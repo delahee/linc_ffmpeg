@@ -1,0 +1,77 @@
+<xml>
+<set name="HXCPP_API_LEVEL" value="321" />
+<files id="haxe">
+<compilerflag value="-Iinclude"/>
+  <file name="src/sdl/_SDL/SDL_helper.cpp">
+   <depend name="include/haxe/IMap.h"/>
+   <depend name="include/haxe/ds/IntMap.h"/>
+   <depend name="include/sdl/_SDL/SDL_helper.h"/>
+  </file>
+  <file name="src/haxe/io/Eof.cpp">
+   <depend name="include/haxe/io/Eof.h"/>
+  </file>
+  <file name="src/haxe/ds/IntMap.cpp">
+   <depend name="include/haxe/IMap.h"/>
+   <depend name="include/haxe/ds/IntMap.h"/>
+  </file>
+  <file name="src/haxe/Log.cpp">
+   <depend name="include/Std.h"/>
+   <depend name="include/haxe/Log.h"/>
+  </file>
+  <file name="src/haxe/IMap.cpp">
+   <depend name="include/haxe/IMap.h"/>
+  </file>
+  <file name="src/TestSdlSound.cpp">
+   <depend name="include/State.h"/>
+   <depend name="include/Std.h"/>
+   <depend name="include/Sys.h"/>
+   <depend name="include/TestSdlSound.h"/>
+   <depend name="include/haxe/Log.h"/>
+  </file>
+  <file name="src/State.cpp">
+   <depend name="include/State.h"/>
+  </file>
+  <file name="src/Sys.cpp">
+   <depend name="include/Sys.h"/>
+   <depend name="include/cpp/Lib.h"/>
+  </file>
+  <file name="src/Std.cpp">
+   <depend name="include/Std.h"/>
+  </file>
+  <file name="src/cpp/Lib.cpp">
+   <depend name="include/cpp/Lib.h"/>
+  </file>
+  <file name="src/__boot__.cpp">
+   <depend name="include/sdl/_SDL/SDL_helper.h"/>
+   <depend name="include/haxe/Log.h"/>
+   <depend name="include/TestSdlSound.h"/>
+   <depend name="include/Sys.h"/>
+  </file>
+  <file name="src/__files__.cpp">
+  </file>
+  <file name="src/__resources__.cpp">
+  </file>
+</files>
+<files id="__lib__">
+<compilerflag value="-Iinclude"/>
+  <file name="src/__lib__.cpp">
+   <depend name="include/TestSdlSound.h"/>
+  </file>
+</files>
+<files id="__main__">
+<compilerflag value="-Iinclude"/>
+  <file name="src/__main__.cpp">
+   <depend name="include/TestSdlSound.h"/>
+  </file>
+</files>
+<files id="__resources__">
+</files>
+<files id="__externs__">
+</files>
+<set name="HAXE_OUTPUT" value="TestSdlSound" />
+<include name="${HXCPP}/build-tool/BuildCommon.xml"/>
+<set name="LINC_FFMPEG_PATH" value="D:/Workspace/linc_ffmpeg/"/>
+<include name="${LINC_FFMPEG_PATH}linc/linc_ffmpeg.xml" />
+<set name="LINC_SDL_PATH" value="c:/Workspace/motionTools/haxeNightly/lib/linc_sdl/git/"/>
+<include name="${LINC_SDL_PATH}linc/linc_sdl.xml" />
+</xml>

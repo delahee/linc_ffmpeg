@@ -1,0 +1,9 @@
+-main TestSdlSound.hx
+-cpp cpp
+-cp ..
+-debug
+-dce full
+-lib linc_sdl
+-D windows
+
+-cmd .\cpp\TestSdlSound-Debug.exe
