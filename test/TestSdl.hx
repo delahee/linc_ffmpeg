@@ -18,8 +18,10 @@ class State{
 	public var videoTexture:Texture;
 	
 	public var buffer_u8 : cpp.RawPointer<cpp.UInt8>;
+	public var buffer_len : Int;
 	public var frame : cpp.Pointer<AVFrame>;
 	public var frameRgb: cpp.Pointer<AVFrame>;
+	public var frameYuv: cpp.Pointer<AVFrame>;
 	public var codecCtx: cpp.Pointer<AVCodecContext>;
 	public var ctxtClone: cpp.Pointer<AVCodecContext>;
 	public var fc: cpp.Pointer<AVFormatContext>;
@@ -141,29 +143,31 @@ class TestSdl {
 		}
 		
 		var frame : cpp.Pointer <AVFrame> = AvFrame.alloc();
-		var frameRgb = AvFrame.alloc();
 		
-		var rgb : _AVPixelFormat = AVPixelFormat.AV_PIX_FMT_RGB24.toNative();
-		var nbytes = AvPicture.getSize( rgb, codecCtx.ptr.width, codecCtx.ptr.height);
-		trace("need " + nbytes + " bytes ");
+		function createFrameBufferRGB(){
+			st.frameRgb = AvFrame.alloc();
+			var rgb : _AVPixelFormat = AVPixelFormat.AV_PIX_FMT_RGB24.toNative();
+			var nbytes = AvPicture.getSize( rgb, codecCtx.ptr.width, codecCtx.ptr.height);
+			st.buffer_u8 = cast Av.malloc(nbytes);
+			var pic : cpp.Pointer<AVPicture> = cast st.frameRgb;
+			var sz = AvPicture.fill(pic, st.buffer_u8, rgb, codecCtx.ptr.width, codecCtx.ptr.height);
+		}
 		
-		var buffer_u8 : cpp.RawPointer<cpp.UInt8> = cast Av.malloc(nbytes);
-		
-		trace( "allocated:" + buffer_u8);
-		
-		var pic : cpp.Pointer<AVPicture> = cast frameRgb;
-		var sz = AvPicture.fill(pic, buffer_u8, rgb, codecCtx.ptr.width, codecCtx.ptr.height);
-		trace("filled " + sz );
+		function createFrameBufferYUV(){
+			st.frameYuv = AvFrame.alloc();
+			var yuv : _AVPixelFormat = AVPixelFormat.AV_PIX_FMT_YUV420P.toNative();
+			st.buffer_len = AvPicture.getSize( yuv, codecCtx.ptr.width, codecCtx.ptr.height);
+			st.buffer_u8 = cast Av.malloc(st.buffer_len);
+			var pic : cpp.Pointer<AVPicture> = cast st.frameYuv;
+			AvPicture.fill(pic, st.buffer_u8, yuv, codecCtx.ptr.width, codecCtx.ptr.height);
+		}
 		
 		var frameFinished : Int = 0;
-		var packetPtr : cpp.Pointer<AVPacket> = untyped __cpp__("new AVPacket()");
 		var swsCtx : cpp.Pointer<SwsContext> = null;
 		
-		st.buffer_u8 = buffer_u8;
 		st.frame = frame;
-		st.frameRgb = frameRgb;
 		st.codecCtx = codecCtx;
-		st.frameRgb = frameRgb;
+		
 		st.ctxtClone = ctxtClone;
 		st.fc = fc;
 		
@@ -176,16 +180,18 @@ class TestSdl {
 				
 				codecCtx.ptr.width,
 				codecCtx.ptr.height,
-				rgb,
+				AV_PIX_FMT_YUV420P.toNative(),
 				
-				SwsFlags.SWS_FAST_BILINEAR,
+				SwsFlags.SWS_BILINEAR,
 				cast null,
 				cast null,
 				cast null
 				);
 			return swsCtx;
 		}
+		var packetPtr : cpp.Pointer<AVPacket> = untyped __cpp__("new AVPacket()");
 		
+		createFrameBufferYUV();
 		var i=0;
 		while (Av.readFrame(fc, packetPtr ) >= 0) {
 			if (packetPtr.ptr.stream_index == videoStreamIdx) {
@@ -201,11 +207,14 @@ class TestSdl {
 					
 					Sws.scale(	swsCtx, frame.ptr.data,
 								frame.ptr.linesize, 0, ctxtClone.ptr.height,
-								frameRgb.ptr.data, frameRgb.ptr.linesize);
-					  
-					if (++i <= 5)
-						Helper.saveFrameToPPM(frameRgb, ctxtClone.ptr.width, ctxtClone.ptr.height, i);
-						
+								st.frameYuv.ptr.data, st.frameYuv.ptr.linesize);
+					
+					var arr:Array<cpp.UInt8> = ffmpeg.Helper.ptrToArray( cast st.buffer_u8, st.buffer_len );
+					var b : haxe.io.BytesData = cast arr; 
+					SDL.updateTexture(st.videoTexture, null, b, codecCtx.ptr.width);
+					SDL.renderClear(renderer);
+					SDL.renderCopy(renderer, st.videoTexture, null, null);
+					SDL.renderPresent(renderer);
 				}
 			}
 		}
@@ -216,7 +225,13 @@ class TestSdl {
 	static function destroy(st:State) {
 		Av.free( cast st.buffer_u8 );
 		Av.free( cast st.frame.raw );
-		Av.free( cast st.frameRgb.raw );
+		
+		if( st.frameRgb!=null)
+			Av.free( cast st.frameRgb.raw );
+			
+		if( st.frameYuv!=null)
+			Av.free( cast st.frameYuv.raw );
+			
 		AvCodec.close( st.codecCtx );
 		AvCodec.close( st.ctxtClone );
 		
