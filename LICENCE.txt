@@ -1,3 +1,5 @@
-This code is licensed under LGPL3
-The ffmpeg library and all other sub licences are to be foudn in the /licences folder.
-For commercial inclusion or sub licensing, please contact david.elahee@gmail.Com
+This code is licensed under MIT.
+The ffmpeg library itself has various licences but its mostly LGPL.
+The ffmpeg library and all other sub licences are to be found in the /licences folder.
+The current windows binaries ( DLL ) are full GPL.
+We plan to integrate a LGPL version of the binaries.
