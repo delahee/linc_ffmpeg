@@ -187,6 +187,10 @@ extern class AVFormatContext {
 	var bit_rate:Int;
 	var pix_fmt : _AVPixelFormat;
 	var sw_pix_fmt : _AVPixelFormat;
+	var sample_rate : Int;
+	var channels : Int;
+	//var sample_fmt : AVSampleFormat;
+	var frame_size : Int;
 }
 
 @:include("linc_ffmpeg.h")

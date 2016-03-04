@@ -1,5 +1,5 @@
 /**
- * following http://dranger.com/ffmpeg/tutorial02.html
+ * following http://dranger.com/ffmpeg/tutorial03.html
  */
 
 import ffmpeg.FFmpeg;
@@ -35,6 +35,17 @@ class State{
 class TestSdlSound {
 	static var st = new State();
 	
+	
+	@:unreflective
+	public static function audioCallback(userdata:cpp.RawPointer<cpp.Void>, stream : cpp.RawPointer<cpp.UInt8>,len:Int) : cpp.Void
+	{
+		//var t : cpp.Void = cast 0;
+		//return t;
+		//return cpp.Void;
+		return;
+	}
+	
+	   
     static function main() {
 		
 		//Ensure file system is available
@@ -67,20 +78,7 @@ class TestSdlSound {
 		trace("file opened " + ret);
 		//trace(ret.ctx);
 		
-		function openAudio() {
-			var wantedSped : SDLAudioSpec;
-			var spec : SDLAudioSpec;
-			
-			/*
-			wanted_spec.freq = aCodecCtx->sample_rate;
-			wanted_spec.format = AUDIO_S16SYS;
-			wanted_spec.channels = aCodecCtx->channels;
-			wanted_spec.silence = 0;
-			wanted_spec.samples = SDL_AUDIO_BUFFER_SIZE;
-			wanted_spec.callback = audio_callback;
-			wanted_spec.userdata = aCodecCtx;
-			*/
-		}
+		
 		// Dump information about file onto standard error
 		Av.dumpFormat(fc, 0, filename, 0);
 		
@@ -119,9 +117,8 @@ class TestSdlSound {
 		var codecCtx = video.ptr.codec;
 		var codec : cpp.ConstPointer< AVCodec >;// = codecCtx.ptr.codec;
 		codec = AvCodec.findDecoder(codecCtx.ptr.codec_id);
-		if ( codec == null ) {
+		if ( codec == null ) 
 			trace("Unsupported codec! #"+codecCtx.ptr.codec_id);
-		}
 		else {
 			trace("ctxt:" + codecCtx 
 			+ " fmt:" + codecCtx.ptr.pix_fmt
@@ -130,6 +127,12 @@ class TestSdlSound {
 			+" h:" + codecCtx.ptr.height
 			);
 		}
+		
+		var aCodecCtxOrig : cpp.Pointer<AVCodecContext>;
+		var aCodecClone : cpp.Pointer<AVCodecContext>;
+		
+		aCodecCtxOrig = audio.ptr.codec;
+		var aCodec : cpp.ConstPointer< AVCodec > = AvCodec.findDecoder(aCodecCtxOrig.ptr.codec_id);
 		
 		var w = codecCtx.ptr.width;
 		var h = codecCtx.ptr.height;
@@ -156,8 +159,11 @@ class TestSdlSound {
 		var ctxtClone = AvCodec.allocContect3( codec );
 		AvCodec.copyContext( ctxtClone, codecCtx );
 		
+		aCodecClone = AvCodec.allocContect3( aCodec );
+		AvCodec.copyContext(aCodecClone, aCodecCtxOrig );
+		
 		if ( (errCode=AvCodec.openNoOpt(ctxtClone, codec)) < 0 ) {
-			trace( "cannot open codec" );
+			trace( "cannot open video codec" );
 			trace( Av.error(errCode) );
 			return;	
 		}
@@ -165,6 +171,30 @@ class TestSdlSound {
 			trace( "opened" );
 		}
 		
+		if ( (errCode=AvCodec.openNoOpt(aCodecClone, aCodec)) < 0 ) {
+			trace( "cannot open audio codec" );
+			trace( Av.error(errCode) );
+			return;	
+		}
+		else {
+			trace( "opened" );
+		}
+		
+		var SDL_AUDIO_BUFFER_SIZE = 1024;
+		var wantedSpec : AudioSpec = SDL_AudioSpec.create();
+		//codecs are opened
+		//opening audio
+		wantedSpec.ptr.freq = aCodecClone.ptr.sample_rate;
+		wantedSpec.ptr.channels = aCodecClone.ptr.channels;
+		wantedSpec.ptr.silence = 0;
+		wantedSpec.ptr.samples = SDL_AUDIO_BUFFER_SIZE;
+		wantedSpec.ptr.format = SDLAudioFormat.AUDIO_S16LSB;
+		wantedSpec.ptr.userdata = cast aCodecClone;
+		
+		//TODO
+		wantedSpec.ptr.callback = cpp.Function.fromStaticFunction(audioCallback);
+		//ptr;
+		  
 		var frame : cpp.Pointer <AVFrame> = AvFrame.alloc();
 		
 		function createFrameBufferRGB(){
