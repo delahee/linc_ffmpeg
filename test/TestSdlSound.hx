@@ -32,22 +32,15 @@ class State{
 	}
 }
 
+@:cppFileCode('
+void audioCallback(void*userdata,Uint8*stream,int len){
+	
+}
+')
 class TestSdlSound {
 	static var st = new State();
 	
-	
-	@:unreflective
-	public static function audioCallback(userdata:cpp.RawPointer<cpp.Void>, stream : cpp.RawPointer<cpp.UInt8>,len:Int) : cpp.Void
-	{
-		//var t : cpp.Void = cast 0;
-		//return t;
-		//return cpp.Void;
-		return;
-	}
-	
-	   
     static function main() {
-		
 		//Ensure file system is available
 		trace(Sys.getCwd());
 		
@@ -88,8 +81,7 @@ class TestSdlSound {
 		var audio = null;
 		var videoStreamIdx = -1;
 		var audioStreamIdx = -1;
-		//trace( fc );
-		//trace("inspecting streams "+nbStream+ " from "+ fc.ptr.streams);
+		
 		for ( i in 0...nbStream ) {
 			//trace(base);
 			var stream = AvFormat.nthStream( fc, i );
@@ -192,7 +184,7 @@ class TestSdlSound {
 		wantedSpec.ptr.userdata = cast aCodecClone;
 		
 		//TODO
-		wantedSpec.ptr.callback = cpp.Function.fromStaticFunction(audioCallback);
+		wantedSpec.ptr.callback = untyped __cpp__("audioCallback");
 		//ptr;
 		  
 		var frame : cpp.Pointer <AVFrame> = AvFrame.alloc();
@@ -225,7 +217,6 @@ class TestSdlSound {
 		st.fc = fc;
 		
 		inline function makeSwsContext( fmt : AVPixelFormat  ) {
-			//trace( "origin pix fmt:"+fmt );
 			var swsCtx : cpp.Pointer<SwsContext> = Sws.getContext(
 				codecCtx.ptr.width,
 				codecCtx.ptr.height,
@@ -242,7 +233,7 @@ class TestSdlSound {
 				);
 			return swsCtx;
 		}
-		var packetPtr : cpp.Pointer<AVPacket> = untyped __cpp__("new AVPacket()");
+		var packetPtr : cpp.Pointer<AVPacket> = AVPacket.create();
 		
 		createFrameBufferYUV();
 		var i=0;

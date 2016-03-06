@@ -197,6 +197,12 @@ extern class AVFormatContext {
 @:native("AVPacket")
 extern class AVPacket{
 	var stream_index:Int;
+	
+	@:native("new AVPacket")
+	public static function create():cpp.Pointer<AVPacket>;
+	
+	@:native("~AVPacket")
+	public function delete():Void;
 }
 
 @:native("cpp.Struct<AVPacket>")
