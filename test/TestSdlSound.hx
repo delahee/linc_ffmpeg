@@ -7,6 +7,7 @@ import ffmpeg.FFmpeg.*;
 
 import sdl.SDL;
 import sdl.SDL.*;
+import sdl.Thread;
 import sdl.Audio;
 import sdl.Window;
 import sdl.Renderer;
@@ -26,11 +27,28 @@ class State{
 	public var codecCtx: cpp.Pointer<AVCodecContext>;
 	public var ctxtClone: cpp.Pointer<AVCodecContext>;
 	public var fc: cpp.Pointer<AVFormatContext>;
+	public var audioq : PacketQueue;
+
 	
 	public function new() {
 		
 	}
 }
+
+class PacketQueue {
+	var first_pkt 	: AVPacketList;
+	var last_pkt 	: AVPacketList;
+	var nb_packets 	: Int;
+	var size 		: Int;
+	var mutex 		: Mutex;
+	var cond 		: Cond;
+	
+	public function new() {
+		mutex = SDL.CreateMutex();
+		cond = SDL.CreateCond();
+	}
+}
+
 
 @:cppFileCode('
 void audioCallback(void*userdata,Uint8*stream,int len){
@@ -57,6 +75,7 @@ class TestSdlSound {
 		else 
 			trace("SDL init ok");
 		
+		st.audioq = new PacketQueue();
 		var errCode = 0;
 		var fc :cpp.Pointer<AVFormatContext> = AvFormat.allocContext();
 		trace("fresh fc:" + fc);
@@ -174,6 +193,7 @@ class TestSdlSound {
 		
 		var SDL_AUDIO_BUFFER_SIZE = 1024;
 		var wantedSpec : AudioSpec = SDL_AudioSpec.create();
+		var spec : AudioSpec = SDL_AudioSpec.create();
 		//codecs are opened
 		//opening audio
 		wantedSpec.ptr.freq = aCodecClone.ptr.sample_rate;
@@ -182,10 +202,20 @@ class TestSdlSound {
 		wantedSpec.ptr.samples = SDL_AUDIO_BUFFER_SIZE;
 		wantedSpec.ptr.format = SDLAudioFormat.AUDIO_S16LSB;
 		wantedSpec.ptr.userdata = cast aCodecClone;
-		
-		//TODO
 		wantedSpec.ptr.callback = untyped __cpp__("audioCallback");
-		//ptr;
+		
+		for ( i in 0...SDL.getNumAudioDevices(false)) 
+			trace( SDL.getAudioDeviceName(i,false));
+	
+		if ( SDL.openAudioDevice(null,false,wantedSpec,spec,SDL_AUDIO_ALLOW_FORMAT_CHANGE) < 0 ) {
+			trace("unable to fetch audio");
+			return;
+		}
+		else 
+		{
+			trace("fetched audio "+spec.ptr.format+" <> "+wantedSpec.ptr.format);
+			//AvCodec.open2(aCodecClone, aCodec, null);
+		}
 		  
 		var frame : cpp.Pointer <AVFrame> = AvFrame.alloc();
 		

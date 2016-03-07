@@ -208,9 +208,12 @@ extern class AVPacket{
 @:native("cpp.Struct<AVPacket>")
 extern class AVPacketStruct extends AVPacket{}
 
-@:include('linc_ffmpeg.h')
-@:native("AVCodec") 		extern class AVCodec { }
+@:native("AVCodec") extern class AVCodec { }
 
+extern class AVPacketList {
+	var pkt:AVPacketStruct;
+	var next:cpp.Pointer<AVPacketList>;
+}
 
 
 
