@@ -6,6 +6,7 @@
 		<compilerflag value='-I${LINC_FFMPEG_PATH}/lib/ffmpeg/include'/>
 		<compilerflag value='-I${LINC_FFMPEG_PATH}/lib/ffmpeg/include/extra' if="windows"/>
 		<file name='${LINC_FFMPEG_PATH}linc/linc_ffmpeg.cpp' />
+		<file name='${LINC_FFMPEG_PATH}linc/linc_ffmpeg.h' />
     </files>
 
 	
