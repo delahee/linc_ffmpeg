@@ -47,11 +47,28 @@ extern class Av {
 	@:native('av_malloc')
 	public static function malloc(size : UInt) : cpp.RawPointer<cpp.Void>;
 	
+	
+	
 	@:native('av_free')
 	public static function free(ptr : cpp.RawPointer<cpp.Void>) : Void;
 	
 	@:native('av_read_frame')
-	public static function readFrame(fc:cpp.Pointer<AVFormatContext>,pck:cpp.Pointer<AVPacket>) : Int;
+	public static function readFrame(fc:cpp.Pointer<AVFormatContext>, pck:cpp.Pointer<AVPacket>) : Int;
+	
+	@:native('av_init_packet')
+	public static function initPacket(pkt:cpp.Pointer<AVPacket>):Void;
+	
+	@:native('av_new_packet')
+	public static function newPacket(pkt:cpp.Pointer<AVPacket>,size:Int):Int;
+	
+	@:native('av_dup_packet')
+	public static function dupPacket(pkt:cpp.Pointer<AVPacket>):Int;
+	
+	@:native('av_copy_packet')
+	public static function copyPacket(dst:cpp.Pointer<AVPacket>, src:cpp.Pointer<AVPacket>):Int;
+	
+	@:native('av_free_packet')
+	public static function freePacket(pkt:cpp.Pointer<AVPacket>):Void;
 }
 
 @:keep
@@ -205,17 +222,20 @@ extern class AVPacket{
 	public function delete():Void;
 }
 
+@:include("linc_ffmpeg.h")
 @:native("cpp.Struct<AVPacket>")
 extern class AVPacketStruct extends AVPacket{}
 
-@:native("AVCodec") extern class AVCodec { }
+@:include("linc_ffmpeg.h")
+@:native("AVCodec") 
+extern class AVCodec { }
 
+@:include("linc_ffmpeg.h")
+@:native("AVPacketList")
 extern class AVPacketList {
 	var pkt:AVPacketStruct;
 	var next:cpp.Pointer<AVPacketList>;
 }
-
-
 
 @:include('linc_ffmpeg.h')
 @:native("AVFrame") 
@@ -346,4 +366,11 @@ class Helper {
 		file.writeInput( new haxe.io.BytesInput( w.getBytes() ) );
 		file.close();
 	}
+	
+	public static function malloc2<T>(size:Int) : cpp.Pointer<T>{
+		var p = Av.malloc(size);
+		return cpp.Pointer.fromRaw( cast p);
+	}
 }
+
+

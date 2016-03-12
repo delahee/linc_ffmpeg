@@ -4,6 +4,7 @@
 
 import ffmpeg.FFmpeg;
 import ffmpeg.FFmpeg.*;
+import ffmpeg.FFmpeg.AVPacketList;
 
 import sdl.SDL;
 import sdl.SDL.*;
@@ -13,6 +14,13 @@ import sdl.Window;
 import sdl.Renderer;
 import sdl.Surface;
 import sdl.Texture;
+
+/**
+ * todo:
+ * 
+ * avcodec_decode_audio4
+ * av_samples_get_buffer_size
+ */
 
 class State{
 	public var window:Window;
@@ -36,8 +44,8 @@ class State{
 }
 
 class PacketQueue {
-	var first_pkt 	: AVPacketList;
-	var last_pkt 	: AVPacketList;
+	var first_pkt 	: cpp.Pointer<ffmpeg.FFmpeg.AVPacketList>;
+	var last_pkt 	: cpp.Pointer<ffmpeg.FFmpeg.AVPacketList>;
 	var nb_packets 	: Int;
 	var size 		: Int;
 	var mutex 		: Mutex;
@@ -46,6 +54,21 @@ class PacketQueue {
 	public function new() {
 		mutex = SDL.CreateMutex();
 		cond = SDL.CreateCond();
+		nb_packets = 0;
+		size = 0;
+		first_pkt = cast null;
+		last_pkt = cast null;
+	}
+	
+	public function put(pkt:cpp.Pointer<AVPacket>) : Int {
+		var q = this;
+		var pkt1 : cpp.Pointer<AVPacketList>=cast null;
+		if (Av.dupPacket(pkt) < 0)
+			return -1;
+		//pkt1 = Helper.malloc2( untyped __cpp__("sizeof(AVPacketList)") );
+			
+		
+		return 0;
 	}
 }
 
@@ -61,6 +84,8 @@ class TestSdlSound {
     static function main() {
 		//Ensure file system is available
 		trace(Sys.getCwd());
+		var p = new PacketQueue();
+		p.put;
 		
 		//Ensure C layer is binded
 		var desc = ffmpeg.FFmpeg.describe_AVInputFormat( cast null );
