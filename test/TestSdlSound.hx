@@ -236,6 +236,7 @@ int audio_decode_frame(AVCodecContext *aCodecCtx, uint8_t *audio_buf, int buf_si
 }*/
 
 void audioCallback(void * userdata, Uint8 * stream, int len) {
+	/*
 	#define MAX_AUDIO_FRAME_SIZE 192000	
 	AVCodecContext *aCodecCtx = (AVCodecContext *)userdata;
 	int len1, audio_size;
@@ -265,6 +266,12 @@ void audioCallback(void * userdata, Uint8 * stream, int len) {
 		stream += len1;
 		audio_buf_index += len1;
 	}
+	*/
+	hx::Anon out = hx::Anon_obj::Create();
+	out->Add(HX_CSTRING("userdata"), 	userdata);
+	out->Add(HX_CSTRING("stream"), 		stream);
+	out->Add(HX_CSTRING("len"),			len);
+	TestSdlSound_obj::audioCallbackHx(out);
 }
 ')
 class TestSdlSound {
@@ -547,8 +554,109 @@ class TestSdlSound {
 	 * 
 	 */
 	
+	static var audio_buf:cpp.Pointer<cpp.UInt8>;
+	static var audio_buf_size = 0;
+	static var audio_buf_index = 0;
+	static var audio_buf_alloc_len = 0;
 	
+	@:keep
+	public static function audioCallbackHx(d:Dynamic) {
+		var MAX_AUDIO_FRAME_SIZE = 192000;
+		var len : Int = d.len;
+		var streamRu8 : cpp.RawPointer<cpp.UInt8>= d.stream;
+		var stream : cpp.Pointer<cpp.UInt8>= cpp.Pointer.fromRaw(streamRu8);
+		//AVCodecContext *aCodecCtx = (AVCodecContext *)userdata;
+		//AVCodecContext * aCodecCtx = (AVCodecContext * ) d.userdata;
+		var aCodecCtx:cpp.Pointer<AVCodecContext> = cast d.userdata;
+		audio_buf_alloc_len = Math.round((MAX_AUDIO_FRAME_SIZE * 3) / 2);
+		audio_buf = cast Av.malloc(audio_buf_alloc_len);
+		
+		var len1=0;
+		var audio_size=0;
+		while(len > 0) {
+			if(audio_buf_index >= audio_buf_size) {
+			  //We have already sent all our data; get more
+			  audio_size = audio_decode_frame(aCodecCtx, audio_buf, audio_buf_alloc_len);
+			  if(audio_size < 0) {
+				//If error, output silence
+				audio_buf_size = 1024; // arbitrary?
+				//memset(audio_buf, 0, audio_buf_size);
+				untyped __cpp__("memset(audio_buf,0,audio_buf_size)");
+			  } else {
+				audio_buf_size = audio_size;
+			  }
+			  audio_buf_index = 0;
+			}
+			len1 = audio_buf_size - audio_buf_index;
+			if(len1 > len)
+			  len1 = len;
+			untyped __cpp__("memcpy(stream, audio_buf + audio_buf_index, len1)");
+			len -= len1;
+			stream.incBy( len1 );
+			audio_buf_index += len1;
+		}
+	}
 	
-	
+	@:keep
+	static function audio_decode_frame(
+		aCodecCtx:AVCodecContextPtr,
+		buf:cpp.Pointer<cpp.UInt8>,
+		buf_size:Int
+	) : Int {
+		var len1 = 0;
+		var data_size = 0;
+		var t = TestSdlSound;
+		if( t.adcFrame == null) t.adcFrame = AVFrame.create();
+		if( t.adcPkt == null ) t.adcPkt = AVPacket.create();
 
+		var frame = TestSdlSound.adcFrame;
+		var pkt = TestSdlSound.adcPkt;
+		
+		while(true) {
+			while(TestSdlSound.audio_pkt_size > 0) {
+				var got_frame = 0;
+				len1 = AvCodec.decodeAudio4(aCodecCtx, frame, cpp.Pointer.addressOf(got_frame), pkt );
+				if(len1 < 0) {
+					//if error, skip frame
+					t.audio_pkt_size = 0;
+					break;
+				}
+				t.audio_pkt_data.incBy( len1 );
+				t.audio_pkt_size -= len1;
+				data_size = 0;
+				if(got_frame!=0) {
+					data_size = AvSamples.getBufferSize(cast null, 
+					aCodecCtx.ptr.channels,
+					frame.ptr.nb_samples,
+					aCodecCtx.ptr.sample_fmt,
+					1);
+					if (data_size <= buf_size) throw "audio_decode:assert";
+					
+					var buf = frame.ptr.data;
+					//untyped __cpp__("memcpy(audio_buf, frame.data[0], data_size)");
+				}
+				if(data_size <= 0) {
+					//No data yet, get more frames
+					continue;
+				}
+				//We have data, return it and come back for more later
+				return data_size;
+			}
+			
+			if(pkt.ptr.data!=null)
+				Av.freePacket(pkt);
+
+			if(t.requestExit!=0) 
+				return -1;
+
+			if( t.st.audioq.get(pkt, 1) < 0) 
+				return -1;
+			
+			t.audio_pkt_data = pkt.ptr.data;
+			t.audio_pkt_size = pkt.ptr.size;
+		}
+		return 0;
+	}
+
+	
 }
