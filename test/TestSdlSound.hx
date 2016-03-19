@@ -14,6 +14,7 @@ import sdl.Window;
 import sdl.Renderer;
 import sdl.Surface;
 import sdl.Texture;
+import sdl.Event;
 
 /**
  * todo:
@@ -56,14 +57,19 @@ class PacketQueue {
 	
 	//todo test
 	public function put(pkt:cpp.Pointer<AVPacket>) : Int {
+		//trace("put");
 		if (pkt == null) throw "assertion : invariant broken";
 		var q = this;
 		var pkt1 : cpp.Pointer<AVPacketList>=cast null;
-		if (Av.dupPacket(pkt) < 0)
+		if (Av.dupPacket(pkt) < 0) {
+			trace("oom");	
 			return -1;
+		}
 		pkt1 = Helper.malloc( untyped __cpp__("sizeof(AVPacketList)") );
-		if ( pkt1 == null)
+		if ( pkt1 == null) {
+			trace("oom");
 			return -1;
+		}
 		pkt1.ptr.pkt = pkt.ref;
 		pkt1.ptr.next = cast null;
 		SDL.LockMutex(q.mutex);
@@ -81,6 +87,7 @@ class PacketQueue {
 		SDL.CondSignal(q.cond);
   
 		SDL.UnlockMutex(q.mutex);
+		//trace("done");
 		return 0;
 	}
 	
@@ -95,7 +102,6 @@ class PacketQueue {
 				ret = -1;
 				break;
 			}
-
 			pkt1 = first_pkt;
 			if (null!=pkt1) {
 				first_pkt = pkt1.ptr.next;
@@ -127,6 +133,7 @@ class Lib {
 		buf:cpp.Pointer<cpp.UInt8>,
 		buf_size:Int
 	) : Int {
+		trace("decoding");
 		var len1 = 0;
 		var data_size = 0;
 		var t = TestSdlSound;
@@ -415,8 +422,6 @@ class TestSdlSound {
 			trace( "opened" );
 		}
 		
-		//audioCallback;
-		
 		var SDL_AUDIO_BUFFER_SIZE = 1024;
 		var wantedSpec : AudioSpec = SDL_AudioSpec.create();
 		var spec : AudioSpec = SDL_AudioSpec.create();
@@ -432,7 +437,6 @@ class TestSdlSound {
 		var callable : cpp.Callable <
 		cpp.RawPointer<cpp.Void> -> cpp.RawPointer<cpp.UInt8> -> Int -> Void >  = cpp.Callable.fromStaticFunction(audioCallback);
 		
-		//wantedSpec.ptr.callback = cast callable;//untyped __cpp__("::TestSdlSound_obj::audioCallback");
 		wantedSpec.ptr.callback = untyped __cpp__("(SDL_AudioCallback)({0})",callable.get_call());
 		
 		for ( i in 0...SDL.getNumAudioDevices(false)) 
@@ -445,7 +449,7 @@ class TestSdlSound {
 		else 
 		{
 			trace("fetched audio "+spec.ptr.format+" <> "+wantedSpec.ptr.format);
-			//AvCodec.open2(aCodecClone, aCodec, null);
+			AvCodec.open2(aCodecClone, aCodec, null);
 		}
 		  
 		var frame : cpp.Pointer <AVFrame> = AvFrame.alloc();
@@ -522,6 +526,21 @@ class TestSdlSound {
 					SDL.renderPresent(renderer);
 				}
 			}
+			else if(packetPtr.ptr.stream_index==audioStreamIdx) {
+				st.audioq.put(packetPtr);
+			}
+			else {
+				Av.freePacket( packetPtr );
+			}
+			
+			var event = SDL.pollEvent();
+			switch(event.type) {
+				case SDL_QUIT:
+				  TestSdlSound.requestExit = 1;
+				  SDL.quit();
+				  Sys.exit(0);
+				default:
+			}
 		}
 		
 		destroy(st);
@@ -558,7 +577,7 @@ class TestSdlSound {
 	@:unreflective
 	@:void
 	public static function audioCallback(userdata:cpp.RawPointer<cpp.Void>, stream:cpp.RawPointer<cpp.UInt8>, len:Int) : Void{
-		
+		trace("called");
 	}
 	
 	
