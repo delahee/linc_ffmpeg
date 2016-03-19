@@ -1,0 +1,10 @@
+-main UTest.hx
+-cpp cpp
+-cp ..
+-debug
+-dce no
+
+-lib linc_sdl
+-D windows
+
+-cmd .\cpp\UTest-Debug.exe

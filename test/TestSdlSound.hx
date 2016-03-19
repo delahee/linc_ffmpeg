@@ -234,7 +234,7 @@ int audio_decode_frame(AVCodecContext *aCodecCtx, uint8_t *audio_buf, int buf_si
     audio_pkt_size = pkt.size;
   }
 }*/
-
+/*
 void audioCallback(void * userdata, Uint8 * stream, int len) {
 	#define MAX_AUDIO_FRAME_SIZE 192000	
 	AVCodecContext *aCodecCtx = (AVCodecContext *)userdata;
@@ -266,6 +266,7 @@ void audioCallback(void * userdata, Uint8 * stream, int len) {
 		audio_buf_index += len1;
 	}
 }
+*/
 ')
 class TestSdlSound {
 	public static var st = new State();
@@ -414,6 +415,8 @@ class TestSdlSound {
 			trace( "opened" );
 		}
 		
+		//audioCallback;
+		
 		var SDL_AUDIO_BUFFER_SIZE = 1024;
 		var wantedSpec : AudioSpec = SDL_AudioSpec.create();
 		var spec : AudioSpec = SDL_AudioSpec.create();
@@ -423,9 +426,14 @@ class TestSdlSound {
 		wantedSpec.ptr.channels = aCodecClone.ptr.channels;
 		wantedSpec.ptr.silence = 0;
 		wantedSpec.ptr.samples = SDL_AUDIO_BUFFER_SIZE;
-		wantedSpec.ptr.format = SDLAudioFormat.AUDIO_S16LSB;
+		wantedSpec.ptr.format = AudioFormat.toNative(AudioFormat.af_s16lsb);
 		wantedSpec.ptr.userdata = cast aCodecClone;
-		wantedSpec.ptr.callback = untyped __cpp__("audioCallback");
+		
+		var callable : cpp.Callable <
+		cpp.RawPointer<cpp.Void> -> cpp.RawPointer<cpp.UInt8> -> Int -> Void >  = cpp.Callable.fromStaticFunction(audioCallback);
+		
+		//wantedSpec.ptr.callback = cast callable;//untyped __cpp__("::TestSdlSound_obj::audioCallback");
+		wantedSpec.ptr.callback = untyped __cpp__("(SDL_AudioCallback)({0})",callable.get_call());
 		
 		for ( i in 0...SDL.getNumAudioDevices(false)) 
 			trace( SDL.getAudioDeviceName(i,false));
@@ -547,6 +555,11 @@ class TestSdlSound {
 	 * 
 	 */
 	
+	@:unreflective
+	@:void
+	public static function audioCallback(userdata:cpp.RawPointer<cpp.Void>, stream:cpp.RawPointer<cpp.UInt8>, len:Int) : Void{
+		
+	}
 	
 	
 	

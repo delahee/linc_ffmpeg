@@ -2,7 +2,8 @@
 -cpp cpp
 -cp ..
 -debug
--dce full
+-dce no
+-cppast
 -D windows
 
 -cmd .\cpp\Test-Debug.exe
