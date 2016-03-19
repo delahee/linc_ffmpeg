@@ -126,6 +126,7 @@ extern class AvCodec {
 	@:native('linc::ffmpeg::avcodec::openNoOpt')
 	static function openNoOpt( ctxt:cpp.Pointer<AVCodecContext>, codec : cpp.ConstPointer<AVCodec> ) : Int;
 	
+	
 	@:native('avcodec_find_decoder')
 	static function findDecoder( codecId : AVCodecID ) : cpp.Pointer<AVCodec>;
 	
