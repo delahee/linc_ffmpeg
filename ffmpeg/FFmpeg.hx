@@ -431,8 +431,8 @@ class Helper {
 	}
 	
 	@:generic
-	public static function malloc<T>(size:Int) : cpp.Pointer<T>{
-		var p = Av.malloc(size);
+	public static inline function malloc<T>(size:Int) : cpp.Pointer<T>{
+		var p : cpp.RawPointer<cpp.Void> = Av.malloc(size);
 		return cpp.Pointer.fromRaw( cast p);
 	}
 }

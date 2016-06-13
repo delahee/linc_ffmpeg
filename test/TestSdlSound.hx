@@ -41,6 +41,8 @@ class State{
 	public var audio_buf_index : Int = 0;
 
 	
+	public var tFrame : cpp.Pointer<AVFrame>;
+	public var tPacket : cpp.Pointer<AVPacket>;
 	public function new() {
 		
 	}
@@ -137,95 +139,7 @@ class Lib {
 }
 
 
-@:cppFileCode('
-/*
-int audio_decode_frame(AVCodecContext *aCodecCtx, uint8_t *audio_buf, int buf_size) {
-
-  static AVPacket pkt;
-  static uint8_t *audio_pkt_data = NULL;
-  static int audio_pkt_size = 0;
-  static AVFrame frame;
-
-  int len1, data_size = 0;
-
-  for(;;) {
-    while(audio_pkt_size > 0) {
-      int got_frame = 0;
-      len1 = avcodec_decode_audio4(aCodecCtx, &frame, &got_frame, &pkt);
-      if(len1 < 0) {
-	audio_pkt_size = 0;
-	break;
-      }
-      audio_pkt_data += len1;
-      audio_pkt_size -= len1;
-      data_size = 0;
-      if(got_frame) {
-	data_size = av_samples_get_buffer_size(NULL, 
-					       aCodecCtx->channels,
-					       frame.nb_samples,
-					       aCodecCtx->sample_fmt,
-					       1);
-	//assert(data_size <= buf_size);
-	memcpy(audio_buf, frame.data[0], data_size);
-      }
-      if(data_size <= 0) {
-	continue;
-      }
-      return data_size;
-    }
-    if(pkt.data)
-      av_free_packet(&pkt);
-
-    if(quit) {
-      return -1;
-    }
-
-    if(packet_queue_get(&audioq, &pkt, 1) < 0) {
-      return -1;
-    }
-    audio_pkt_data = pkt.data;
-    audio_pkt_size = pkt.size;
-  }
-}*/
-
-void dummy(void * userdata, Uint8 * stream, int len) {
-	//printf("DUM\\n");
-}
-
-/*
-void audioCallback(void * userdata, Uint8 * stream, int len) {
-	#define MAX_AUDIO_FRAME_SIZE 192000	
-	AVCodecContext *aCodecCtx = (AVCodecContext *)userdata;
-	int len1, audio_size;
-
-	static uint8_t audio_buf[(MAX_AUDIO_FRAME_SIZE * 3) / 2];
-	static unsigned int audio_buf_size = 0;
-	static unsigned int audio_buf_index = 0;
-
-	while(len > 0) {
-		if(audio_buf_index >= audio_buf_size) {
-		  //We have already sent all our data; get more
-		  //audio_size = audio_decode_frame(aCodecCtx, audio_buf, sizeof(audio_buf));
-		  if(audio_size < 0) {
-			//If error, output silence
-			audio_buf_size = 1024; // arbitrary?
-			memset(audio_buf, 0, audio_buf_size);
-		  } else {
-			audio_buf_size = audio_size;
-		  }
-		  audio_buf_index = 0;
-		}
-		len1 = audio_buf_size - audio_buf_index;
-		if(len1 > len)
-		  len1 = len;
-		memcpy(stream, (uint8_t *)audio_buf + audio_buf_index, len1);
-		len -= len1;
-		stream += len1;
-		audio_buf_index += len1;
-	}
-}
-*/
-')
+@:cppFileCode('')
 class TestSdlSound {
 	public static var st = new State();
 	
@@ -557,7 +471,7 @@ class TestSdlSound {
 	public static function audioCallback(userdata:cpp.RawPointer<cpp.Void>, stream:cpp.RawPointer<cpp.UInt8>, len:Int) : Void{
 		trace("called");
 		var MAX_AUDIO_FRAME_SIZE = 192000;
-		var aCodecCtx : cpp.Pointer<AVCodecContext> = cast  userdata;
+		var aCodecCtx : cpp.Pointer<AVCodecContext> = cast userdata;
 		var len1:Int=0;
 		var audio_size : Int=0;
 
@@ -570,7 +484,8 @@ class TestSdlSound {
 		while(len > 0) {
 			if(st.audio_buf_index >= st.audio_buf_size) {
 			  //We have already sent all our data; get more
-			  //audio_size = audio_decode_frame(aCodecCtx, st.audio_buf, (MAX_AUDIO_FRAME_SIZE * 3) >> 1);
+			  //TO FUCKING DO
+			  audio_size = audio_decode_frame(cast aCodecCtx, st.audio_buf, (MAX_AUDIO_FRAME_SIZE * 3) >> 1);
 			  if(audio_size < 0) {
 				//If error, output silence
 				st.audio_buf_size = 1024; // arbitrary?
@@ -592,22 +507,29 @@ class TestSdlSound {
 		
 	}
 		
+	
+	@:unreflective
 	public static function audio_decode_frame(
-		aCodecCtx:AVCodecContextPtr,
+		aCodecCtx:cpp.RawPointer<cpp.Void>,
 		buf:cpp.Pointer<cpp.UInt8>,
 		buf_size:Int
 	) : Int {
-		/*/
+		var aCodecCtx : cpp.Pointer<AVCodecContext> = cpp.Pointer.fromRaw(cast aCodecCtx);
+		
 		trace("decoding");
 		var len1 = 0;
 		var data_size = 0;
-		var t = TestSdlSound;
-		if( t.adcFrame == null) t.adcFrame = AVFrame.create();
-		if( t.adcPkt == null ) t.adcPkt = AVPacket.create();
+		//var frame = TestSdlSound.adcFrame;
+		//var t = TestSdlSound;
+		//if( TestSdlSound.adcFrame == null) TestSdlSound.adcFrame = AVFrame.create();
+		//if( t.adcPkt == null ) t.adcPkt = AVPacket.create();
 
-		var frame = TestSdlSound.adcFrame;
-		var pkt = TestSdlSound.adcPkt;
-		
+		var t = TestSdlSound.st;
+		if ( t.tFrame != null) t.tFrame = AVFrame.create();
+		if ( t.tPacket != null) t.tPacket = AVPacket.create();
+		var got_frame = 0;
+		//AvCodec.decodeAudio4(aCodecCtx, t.frame, cpp.Pointer.addressOf(got_frame), t.tPacket );
+		/*
 		while(true) {
 			while(TestSdlSound.audio_pkt_size > 0) {
 				var got_frame = 0;
