@@ -99,18 +99,23 @@ class PacketQueue {
 	}
 	
 	public function get(pkt:cpp.Pointer<AVPacket>, block:Int) : Int {
-		var pkt1: cpp.Pointer<AVPacketList>;
+		trace("audio get");
+		var pkt1: cpp.Pointer<AVPacketList> = null;
 		var ret:Int=0;
 		var q = this;
+		trace("locking mutex for : "+pkt);
 		SDL.LockMutex(mutex);
-		  
+		
+		trace("loop");
 		while(true){
 			if(TestSdlSound.requestExit!=0) {
 				ret = -1;
+				trace("exit requested");
 				break;
+				
 			}
 			pkt1 = first_pkt;
-			if (null!=pkt1) {
+			if (null!=pkt1&&pkt1.ptr!=null) {
 				first_pkt = pkt1.ptr.next;
 				if (null==first_pkt)
 					last_pkt = null;
@@ -118,8 +123,15 @@ class PacketQueue {
 				var pktStruct : AVPacketStruct = cast pkt1.ptr.pkt;
 				size -= pktStruct.size;
 				
-				pkt.set_ref( pkt1.ptr.pkt );
-				Av.free(cast pkt1.get_raw());
+				//pkt.set_ref( pkt1.ptr.pkt );
+				//pkt.ptr = pkt1.ptr.;
+				trace("recv "+pkt);
+				trace("recv "+pkt.ptr);
+				pkt.ref = pkt1.ptr.pkt;
+				
+				trace("deep cpying:" +pkt1.ptr);
+				
+				Av.free(cast pkt1.get_raw());//wat ?
 				ret = 1;
 				break;
 			} else if (0==block) {
@@ -130,6 +142,7 @@ class PacketQueue {
 			}
 		}
 		SDL.UnlockMutex(mutex);
+		//trace("out of mutex");
 		return ret;
 	}
 }
@@ -153,9 +166,46 @@ class TestSdlSound {
     static function main() {
 		//Ensure file system is available
 		trace(Sys.getCwd());
-		var p = new PacketQueue();
-		p.put;
-		p.get;
+		{
+			var p = new PacketQueue();
+			p.put;
+			p.get;
+			
+			var p0 = AVPacket.create();
+			var p1 = AVPacket.create();
+			p0.ptr.size = 3;
+			p1.ptr.size = 4;
+			/*
+			trace(p0.ptr.size);
+			trace(p1.ptr.size);
+			
+			trace(p0);
+			trace(p1);
+			
+			AVPacket.copy(p0, p1 ); 
+			*/
+			
+			if(false)
+			{
+				//DEEP copy
+				trace(p0.ptr.size);
+				trace(p1.ptr.size);
+				p0.ref = p1.ref;
+				p1.ptr.size = 5;
+				trace(p0.ptr.size);
+				trace(p1.ptr.size);
+			}
+			
+			{
+				//ptr aliasing
+				trace(p0.ptr.size);
+				trace(p1.ptr.size);
+				p0.ptr = p1.ptr;
+				p1.ptr.size = 5;
+				trace(p0.ptr.size);
+				trace(p1.ptr.size);
+			}
+		}
 		//Lib.audio_decode_frame;
 		//audio_decode_frame;
 		//Ensure C layer is binded
@@ -305,9 +355,12 @@ class TestSdlSound {
 		wantedSpec.ptr.callback = untyped __cpp__("(SDL_AudioCallback)({0})",callable.get_call());
 		//wantedSpec.ptr.callback = untyped __cpp__("dummy");
 		
-		for ( i in 0...SDL.getNumAudioDevices(false)) 
-			trace( SDL.getAudioDeviceName(i,false));
-	
+		var arr = [];
+		for ( i in 0...SDL.getNumAudioDevices(false)) {
+			var d = SDL.getAudioDeviceName(i, false);
+			trace( d);
+			arr.push(d);
+		}
 		
 		var device = SDL.openAudioDevice(null, false, wantedSpec, spec, 
 			SDL_AUDIO_ALLOW_ANY_CHANGE);
@@ -395,6 +448,7 @@ class TestSdlSound {
 		var i=0;
 		while (Av.readFrame(fc, packetPtr ) >= 0) {
 			if (packetPtr.ptr.stream_index == videoStreamIdx) {
+				//trace("decode video");
 				//TODO
 				AvCodec.decodeVideo2( ctxtClone, frame, cpp.Pointer.addressOf(frameFinished), packetPtr );
 				
@@ -405,6 +459,7 @@ class TestSdlSound {
 						trace("ctx:"+swsCtx);
 					}
 					
+					//trace("scaling");
 					Sws.scale(	swsCtx, frame.ptr.data,
 								frame.ptr.linesize, 0, ctxtClone.ptr.height,
 								st.frameYuv.ptr.data, st.frameYuv.ptr.linesize);
@@ -415,6 +470,7 @@ class TestSdlSound {
 					SDL.renderClear(renderer);
 					SDL.renderCopy(renderer, st.videoTexture, null, null);
 					SDL.renderPresent(renderer);
+					//trace("presenting");
 				}
 			}
 			else if(packetPtr.ptr.stream_index==audioStreamIdx) {
@@ -468,10 +524,18 @@ class TestSdlSound {
 	
 	@:unreflective
 	@:void
+	@:analyzer(no_simplification)
 	public static function audioCallback(userdata:cpp.RawPointer<cpp.Void>, stream:cpp.RawPointer<cpp.UInt8>, len:Int) : Void{
-		trace("called");
+		trace("called cbk");
 		var MAX_AUDIO_FRAME_SIZE = 192000;
-		var aCodecCtx : cpp.Pointer<AVCodecContext> = cast userdata;
+		
+		var add : Int = cast userdata;
+		trace("0x" + StringTools.hex(add));
+		
+		//var ud : cpp.Pointer<cpp.Void> = cpp.Pointer.fromRaw( userdata );
+		var aCodecCtx : cpp.Pointer<AVCodecContext> = cpp.Pointer.fromRaw( cast userdata );
+		
+		trace("resulting context:" + aCodecCtx);
 		var len1:Int=0;
 		var audio_size : Int=0;
 
@@ -485,7 +549,9 @@ class TestSdlSound {
 			if(st.audio_buf_index >= st.audio_buf_size) {
 			  //We have already sent all our data; get more
 			  //TO FUCKING DO
+			  trace("decoding a frame");
 			  audio_size = audio_decode_frame(cast aCodecCtx, st.audio_buf, (MAX_AUDIO_FRAME_SIZE * 3) >> 1);
+			  trace("decoded");
 			  if(audio_size < 0) {
 				//If error, output silence
 				st.audio_buf_size = 1024; // arbitrary?
@@ -499,12 +565,15 @@ class TestSdlSound {
 			if(len1 > len)
 			  len1 = len;
 			//memcpy(stream, (uint8_t * ) audio_buf + audio_buf_index, len1);
+			trace("retriving audio in stream "+len1);
 			untyped __cpp__("memcpy({0}, (uint8_t * ) {1} + {2}, {3})",stream,st.audio_buf,st.audio_buf_index,len1);
 			len -= len1;
 			pStream.incBy(len1);
+			//stream = pStream.get_raw()
+			untyped __cpp__("stream+={0}",len1);
 			st.audio_buf_index += len1;
 		}
-		
+		trace("callback done");
 	}
 		
 	
@@ -515,65 +584,101 @@ class TestSdlSound {
 		buf_size:Int
 	) : Int {
 		var aCodecCtx : cpp.Pointer<AVCodecContext> = cpp.Pointer.fromRaw(cast aCodecCtx);
-		
-		trace("decoding");
 		var len1 = 0;
-		var data_size = 0;
-		//var frame = TestSdlSound.adcFrame;
-		//var t = TestSdlSound;
-		//if( TestSdlSound.adcFrame == null) TestSdlSound.adcFrame = AVFrame.create();
-		//if( t.adcPkt == null ) t.adcPkt = AVPacket.create();
-
-		var t = TestSdlSound.st;
-		if ( t.tFrame != null) t.tFrame = AVFrame.create();
-		if ( t.tPacket != null) t.tPacket = AVPacket.create();
+		var data_size : Int = 0;
+		var t = TestSdlSound;
+		var st = TestSdlSound.st;
+		if ( st.tFrame == null) {
+			st.tFrame = AVFrame.create();
+		}
+		
+		if ( st.tPacket == null) {
+			//trace("generating packet");
+			st.tPacket = AVPacket.create();
+			AVPacket.init( st.tPacket );
+			//trace("generated packet");
+		}
 		var got_frame = 0;
-		//AvCodec.decodeAudio4(aCodecCtx, t.frame, cpp.Pointer.addressOf(got_frame), t.tPacket );
-		/*
-		while(true) {
-			while(TestSdlSound.audio_pkt_size > 0) {
+		
+		//var pkt = st.tPacket;
+		//var frame = st.tFrame;
+		trace("audio_decode_frame : loop");
+		//trace("in packet :"+st.tPacket.ptr.size+"\n");
+		while (true) {
+			
+			trace("audio_decode_frame : in loop\n");
+			while (TestSdlSound.audio_pkt_size > 0) {
+				trace("decode4");
 				var got_frame = 0;
-				len1 = AvCodec.decodeAudio4(aCodecCtx, frame, cpp.Pointer.addressOf(got_frame), pkt );
+				len1 = AvCodec.decodeAudio4(aCodecCtx, st.frame, cpp.Pointer.addressOf(got_frame), st.tPacket );
 				if(len1 < 0) {
 					//if error, skip frame
 					t.audio_pkt_size = 0;
+					trace("error : skip frame");
 					break;
 				}
 				t.audio_pkt_data.incBy( len1 );
 				t.audio_pkt_size -= len1;
 				data_size = 0;
-				if(got_frame!=0) {
+				if (got_frame != 0) {
+					
+					trace("retrieve buf size " + buf_size);
 					data_size = AvSamples.getBufferSize(cast null, 
 					aCodecCtx.ptr.channels,
-					frame.ptr.nb_samples,
+					st.frame.ptr.nb_samples,
 					aCodecCtx.ptr.sample_fmt,
 					1);
-					if (data_size <= buf_size) throw "audio_decode:assert";
 					
-					var buf = frame.ptr.data;
-					//untyped __cpp__("memcpy(audio_buf, frame.data[0], data_size)");
+					trace("retrieved " + buf_size);
+					trace("data : " + data_size);
+					
+					if ( data_size < 0 ) {
+						trace("ds error "+data_size);
+						return 0;
+					}
+					if (data_size > buf_size) {
+						trace("!!!! audio_decode:assert 0x"+StringTools.hex(data_size)+" "+data_size);
+						throw "audio_decode:assert";
+						return 0;
+					}
+					
+					//var data = st.frame.ptr.data[0];
+					var tdata : cpp.Pointer<cpp.RawPointer<cpp.UInt8>> = cpp.Pointer.fromRaw(st.frame.ptr.data);
+					var dataArray : cpp.Pointer<cpp.UInt8> = cpp.Pointer.fromRaw( tdata.at(0) );
+					//var buf = frame.ptr.data;
+					
+					trace("cpy back");
+					untyped __cpp__("memcpy(buf, dataArray, data_size)");
 				}
 				if(data_size <= 0) {
 					//No data yet, get more frames
+					trace("not enough data");
 					continue;
 				}
 				//We have data, return it and come back for more later
 				return data_size;
 			}
 			
-			if(pkt.ptr.data!=null)
-				Av.freePacket(pkt);
+			trace("freeing : " + st.tPacket);
+			if(st.tPacket != null && st.tPacket.ptr !=null && st.tPacket.ptr.data!=null){
+				Av.freePacket(st.tPacket);
+				trace("freed");
+			}
 
-			if(t.requestExit!=0) 
+			if (t.requestExit != 0) {
+				trace("exiting");
 				return -1;
+			}
 
-			if( t.st.audioq.get(pkt, 1) < 0) 
+			trace("get audioq "+Std.string( st.tPacket.get_raw() ));
+			if ( t.st.audioq.get(st.tPacket, 1) < 0) {
+				trace("audioq exit");
 				return -1;
+			}
 			
-			t.audio_pkt_data = pkt.ptr.data;
-			t.audio_pkt_size = pkt.ptr.size;
+			t.audio_pkt_data = st.tPacket.ptr.data;
+			t.audio_pkt_size = st.tPacket.ptr.size;
 		}
-		*/
 		return 0;
 	}
 	

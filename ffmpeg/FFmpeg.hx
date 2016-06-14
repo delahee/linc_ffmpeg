@@ -232,6 +232,14 @@ extern class AVCodecContext {
 
 typedef AVCodecContextPtr = cpp.Pointer<AVCodecContext>;
 
+
+/**
+ * Deep copy 
+ * p0.ref = p1.ref;
+ * 
+ * Ptr aliasing
+ * p0.ptr = p1.ptr;
+ */
 @:include("linc_ffmpeg.h")
 @:native("AVPacket")
 extern class AVPacket {
@@ -250,8 +258,15 @@ extern class AVPacket {
 	@:native("new AVPacket")
 	public static function create():cpp.Pointer<AVPacket>;
 	
+	@:native("av_init_packet")
+	public static function init(pkt:cpp.Pointer<AVPacket>):Void;
+	
 	@:native("~AVPacket")
 	public function delete():Void;
+	
+	public static inline function copy( p0 : cpp.Pointer<AVPacket>,p1 : cpp.Pointer<AVPacket> ) : Void {
+		untyped __cpp__("memcpy({0},{1},sizeof(AVPacket))", p0.ptr, p1.ptr  );
+	}
 }
 
 @:include("linc_ffmpeg.h")
