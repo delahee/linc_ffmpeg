@@ -52,10 +52,11 @@ class TestSdl {
 		else 
 			trace("SDL init ok");
 		
+		sdl.SDL.GL_SetSwapInterval(true);
 		var errCode = 0;
 		var fc :cpp.Pointer<AVFormatContext> = AvFormat.allocContext();
 		trace("fresh fc:" + fc);
-		var filename = "data/SampleVideo_360x240_1mb.mp4";
+		var filename = "data/Vikings.S04E05.720p.HDTV.x264-KILLERS[eztv].mkv";
 		//var filename = "data/centaur_1.mpg";
 		var ret = AvFormat.openInput( filename, fc, cast null, cast null);
 		if ( ret.retCode < 0 ) {
@@ -82,6 +83,7 @@ class TestSdl {
 			if ( codec.ptr.codec_type == AVMEDIA_TYPE_VIDEO ){
 				video = stream;
 				videoStreamIdx = i;
+				
 			}
 		}
 		
@@ -92,6 +94,37 @@ class TestSdl {
 			trace( "No video found" );
 			return;
 		}
+		
+		//introspect codec 
+		/*
+		var a = [];
+		var i = 0;
+		var c :cpp.ConstPointer<AVCodec> = AvCodec.next(cast null);
+		while ( c != null) {
+			var str = "";
+			if ( c != null && c.ptr != null) {
+				//"#" + i + " " +c.ptr.name+" " + c.ptr.long_name+" \n "
+				str += c.ptr.name;
+				a.push( str );
+			}
+			c = AvCodec.next(c);
+		}
+		sys.io.File.saveContent( "d:\\codecs.txt", a.join(" ") );
+		*/
+		/*
+		var a = [];
+		var i = 0;
+		var c :cpp.ConstPointer<AVHWAccel> = AcHWAccel.next(cast null);
+		while ( c != null) {
+			var str = "";
+			if ( c != null && c.ptr != null) {
+				str += c.ptr.name+" "+c.ptr.id;
+				a.push( str );
+			}
+			c = AcHWAccel.next(c);
+		}
+		sys.io.File.saveContent( "d:\\hwcodecs.txt", a.join(" ") );
+		*/
 		
 		var codecCtx = video.ptr.codec;
 		var codec : cpp.ConstPointer< AVCodec >;// = codecCtx.ptr.codec;
@@ -105,6 +138,9 @@ class TestSdl {
 			+ " sw_pix_fmt:" + codecCtx.ptr.sw_pix_fmt
 			+" w:"+codecCtx.ptr.width
 			+" h:" + codecCtx.ptr.height
+			+" cdc: "+codec.ptr.name
+			+" lcdc: "+codec.ptr.long_name
+			+" id: "+codec.ptr.id
 			);
 		}
 		
@@ -192,8 +228,10 @@ class TestSdl {
 		var packetPtr : cpp.Pointer<AVPacket> = untyped __cpp__("new AVPacket()");
 		
 		createFrameBufferYUV();
-		var i=0;
+		//var i=0;
+		var loops = 0;
 		while (Av.readFrame(fc, packetPtr ) >= 0) {
+			var t0 = haxe.Timer.stamp();
 			if (packetPtr.ptr.stream_index == videoStreamIdx) {
 				//TODO
 				AvCodec.decodeVideo2( ctxtClone, frame, cpp.Pointer.addressOf(frameFinished), packetPtr );
@@ -216,6 +254,11 @@ class TestSdl {
 					SDL.renderCopy(renderer, st.videoTexture, null, null);
 					SDL.renderPresent(renderer);
 				}
+			}
+			var t1 = haxe.Timer.stamp();
+			loops++;
+			if( loops < 100){
+				trace(t1 - t0);
 			}
 		}
 		

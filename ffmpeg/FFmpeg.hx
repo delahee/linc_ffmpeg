@@ -142,6 +142,33 @@ extern class AvCodec {
 	
 	@:native('avcodec_decode_audio4')
 	static function decodeAudio4(avctx:cpp.Pointer<AVCodecContext>, frame:cpp.Pointer<AVFrame>, got_frame_ptr:cpp.Pointer<Int>, avpkt:cpp.Pointer<AVPacket>) : Int;
+	
+	@:native('av_codec_next')
+	static function next( cdc : cpp.ConstPointer<AVCodec> ) : cpp.ConstPointer<AVCodec>;
+	
+	
+}
+
+@:include("linc_ffmpeg.h")
+@:native("AVHWAccel") 
+extern class AVHWAccel { 
+	var name 		: cpp.ConstCharStar;
+	var id 			: AVCodecID;
+}
+
+@:keep
+@:include('linc_ffmpeg.h')
+extern class AcHWAccel {
+	@:native('av_hwaccel_next')
+	static function next( cdc : cpp.ConstPointer<AVHWAccel> ) : cpp.ConstPointer<AVHWAccel>;
+	
+	@:native('find_hwaccel')
+	static function findHwaccel(cid:AVCodecID, fmt:_AVPixelFormat) : cpp.Pointer<AVHWAccel>;
+	
+	@:native('setup_hwaccel')
+	static function  setupHwaccel(	avctx:cpp.Pointer<AVCodecContext>,
+									fmt : _AVPixelFormat,
+									name : cpp.ConstCharStar) : cpp.Pointer<AVHWAccel>;
 }
 
 @:keep
@@ -293,7 +320,11 @@ extern class AVBufferRef {
 
 @:include("linc_ffmpeg.h")
 @:native("AVCodec") 
-extern class AVCodec { }
+extern class AVCodec { 
+	var name 		: cpp.ConstCharStar;
+	var long_name 	: cpp.ConstCharStar;
+	var id 			: AVCodecID;
+}
 
 @:include("linc_ffmpeg.h")
 @:native("AVPacketList")
@@ -417,6 +448,8 @@ class Helper {
 		untyped __cpp__("{0}->setUnmanagedData({1},{2});",a,ptr.raw,length);
 		return a;
 	}
+	
+	
 	
 	public static function saveFrameToPPM(fr:cpp.Pointer<AVFrame>, width:Int, height:Int, i:Int) {
 		var w = new haxe.io.BytesOutput();
