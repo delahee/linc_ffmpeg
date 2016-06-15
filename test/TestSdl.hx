@@ -166,7 +166,7 @@ class TestSdl {
 			return;
 		} else trace("created streamed yuv texture");
 		
-		var ctxtClone = AvCodec.allocContect3( codec );
+		var ctxtClone = AvCodec.allocContext3( codec );
 		AvCodec.copyContext( ctxtClone, codecCtx );
 		
 		if ( (errCode=AvCodec.openNoOpt(ctxtClone, codec)) < 0 ) {

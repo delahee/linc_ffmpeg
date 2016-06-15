@@ -313,10 +313,10 @@ class TestSdlSound {
 			return;
 		} else trace("created streamed yuv texture");
 		
-		var ctxtClone = AvCodec.allocContect3( codec );
+		var ctxtClone = AvCodec.allocContext3( codec );
 		AvCodec.copyContext( ctxtClone, codecCtx );
 		
-		aCodecClone = AvCodec.allocContect3( aCodec );
+		aCodecClone = AvCodec.allocContext3( aCodec );
 		AvCodec.copyContext(aCodecClone, aCodecCtxOrig );
 		
 		if ( (errCode=AvCodec.openNoOpt(ctxtClone, codec)) < 0 ) {
