@@ -117,7 +117,7 @@ extern class AvFormat {
 extern class AvCodec {
 	
 	@:native('avcodec_alloc_context3')
-	static function allocContect3( codec : cpp.ConstPointer<AVCodec> )
+	static function allocContext3( codec : cpp.ConstPointer<AVCodec> )
 	: cpp.Pointer<AVCodecContext>;
 	
 	@:native('avcodec_copy_context')
@@ -158,15 +158,15 @@ extern class AVHWAccel {
 
 @:keep
 @:include('linc_ffmpeg.h')
-extern class AcHWAccel {
+extern class AvHWAccel {
 	@:native('av_hwaccel_next')
 	static function next( cdc : cpp.ConstPointer<AVHWAccel> ) : cpp.ConstPointer<AVHWAccel>;
 	
 	@:native('find_hwaccel')
-	static function findHwaccel(cid:AVCodecID, fmt:_AVPixelFormat) : cpp.Pointer<AVHWAccel>;
+	static function find( cid:AVCodecID, fmt:_AVPixelFormat) : cpp.Pointer<AVHWAccel>;
 	
 	@:native('setup_hwaccel')
-	static function  setupHwaccel(	avctx:cpp.Pointer<AVCodecContext>,
+	static function setup(	avctx:cpp.Pointer<AVCodecContext>,
 									fmt : _AVPixelFormat,
 									name : cpp.ConstCharStar) : cpp.Pointer<AVHWAccel>;
 }

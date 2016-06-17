@@ -28,6 +28,16 @@ Contributing ?
 
 Hardware acceleration ? 
 - Be wary that on performance sensitive platoforms like android/ios, ffmpeg will underperform because blitting video requires heavy CPU bandwith as GPU Blitting is not so easy to get working. The HW decoding would be taken care by your build like in all ffmpeg release and GPU blitting would be taken care by your video playing setup lib ( like SDL or Native whatever ). 
+
+How to build ?
+
+Here is my current setup. Since linc_ffmpeg is not in production and relying on a moderately stable hxcpp features, be careful 
+- haxe -version
+3.3.0 (git build development @ 3d8d06a)
+- hxcpp revision : a802af374ba3cc3be8927a93678a7193d679f1d4
+- for samples ( recommended ) github.com/delahee/linc_sdl
+- github.com/delahee/linc_sdl
+- if you want to build for other plaftorms, you have to retrieve ffmpeg binaries and place them aside windows binaries AND add the ffmpeg necessary build step in the linc/linc_ffmpeg.xml ( please refer to other linc libraries for these) 
  
 We strongly emphasize that hw and performances are generally a touchy problem with ffmpeg, the layer itself is free of superfluous allocation so everything should be in order but be careful about setup.
 

@@ -56,8 +56,8 @@ class TestSdl {
 		var errCode = 0;
 		var fc :cpp.Pointer<AVFormatContext> = AvFormat.allocContext();
 		trace("fresh fc:" + fc);
-		var filename = "data/Vikings.S04E05.720p.HDTV.x264-KILLERS[eztv].mkv";
-		//var filename = "data/centaur_1.mpg";
+		//var filename = "data/Vikings.S04E05.720p.HDTV.x264-KILLERS[eztv].mkv";
+		var filename = "data/SampleVideo_360x240_1mb.mp4";
 		var ret = AvFormat.openInput( filename, fc, cast null, cast null);
 		if ( ret.retCode < 0 ) {
 			trace( "Error" );

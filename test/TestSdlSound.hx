@@ -152,7 +152,7 @@ class Lib {
 }
 
 
-@:cppFileCode('')
+@:cppFileCode('int i = 0;')
 class TestSdlSound {
 	public static var st = new State();
 	
@@ -398,7 +398,7 @@ class TestSdlSound {
 		
 		var frame : cpp.Pointer <AVFrame> = AvFrame.alloc();
 		
-		function createFrameBufferRGB(){
+		inline function createFrameBufferRGB(){
 			st.frameRgb = AvFrame.alloc();
 			var rgb : _AVPixelFormat = AVPixelFormat.AV_PIX_FMT_RGB24.toNative();
 			var nbytes = AvPicture.getSize( rgb, codecCtx.ptr.width, codecCtx.ptr.height);
