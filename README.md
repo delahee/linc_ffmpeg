@@ -35,8 +35,7 @@ Here is my current setup. Since linc_ffmpeg is not in production and relying on 
 - haxe -version
 3.3.0 (git build development @ 3d8d06a)
 - hxcpp revision : a802af374ba3cc3be8927a93678a7193d679f1d4
-- for samples ( recommended ) github.com/delahee/linc_sdl
-- github.com/delahee/linc_sdl
+- for samples ( recommended ), you'll need SDL from github.com/delahee/linc_sdl
 - if you want to build for other plaftorms, you have to retrieve ffmpeg binaries and place them aside windows binaries AND add the ffmpeg necessary build step in the linc/linc_ffmpeg.xml ( please refer to other linc libraries for these) 
  
 We strongly emphasize that hw and performances are generally a touchy problem with ffmpeg, the layer itself is free of superfluous allocation so everything should be in order but be careful about setup.

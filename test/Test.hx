@@ -121,7 +121,7 @@ class Test {
 		trace("codec?:" + codec);
 		//todo trackback to corrrect codec!
 		
-		var ctxtClone = AvCodec.allocContect3( codec );
+		var ctxtClone = AvCodec.allocContext3( codec );
 		AvCodec.copyContext( ctxtClone, codecCtx );
 		
 		if ( (errCode=AvCodec.openNoOpt(ctxtClone, codec)) < 0 ) {

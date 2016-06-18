@@ -398,7 +398,7 @@ class TestSdlSound {
 		
 		var frame : cpp.Pointer <AVFrame> = AvFrame.alloc();
 		
-		inline function createFrameBufferRGB(){
+		function createFrameBufferRGB(){
 			st.frameRgb = AvFrame.alloc();
 			var rgb : _AVPixelFormat = AVPixelFormat.AV_PIX_FMT_RGB24.toNative();
 			var nbytes = AvPicture.getSize( rgb, codecCtx.ptr.width, codecCtx.ptr.height);
